@@ -69,12 +69,32 @@ const serialToTitle = (d: Drama, kind: TitleKind): Title => ({
   meta: `S${d.seasons} · ${d.episodes} Eps · ${d.network}`,
 });
 
-export const ALL_TITLES: Title[] = [
+/** Dedupe by id then by normalized title, preferring titles that have real poster art. */
+function dedupeTitles(titles: Title[]): Title[] {
+  const seenId = new Set<string>();
+  const seenTitle = new Set<string>();
+  const out: Title[] = [];
+  // pass 1: entries with real art win; pass 2 fills the rest
+  for (const pass of [0, 1]) {
+    for (const t of titles) {
+      if (pass === 0 && !POSTER_MANIFEST[t.id]) continue;
+      if (pass === 1 && seenId.has(t.id)) continue;
+      const normTitle = t.title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      if (seenId.has(t.id) || seenTitle.has(normTitle)) continue;
+      seenId.add(t.id);
+      seenTitle.add(normTitle);
+      out.push(t);
+    }
+  }
+  return out;
+}
+
+export const ALL_TITLES: Title[] = dedupeTitles([
   ...MOVIES.map(movieToTitle),
   ...MOVIES_EXTRA.map(movieToTitle),
   ...DRAMAS.map((d) => serialToTitle(d, "drama")),
   ...WEB_SERIES.map((d) => serialToTitle(d, "series")),
-];
+]);
 
 export const MOVIE_TITLES = ALL_TITLES.filter((t) => t.kind === "movie");
 export const DRAMA_TITLES = ALL_TITLES.filter((t) => t.kind === "drama");

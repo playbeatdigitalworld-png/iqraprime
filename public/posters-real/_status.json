@@ -1,12 +1,30 @@
 {
  "ok": 0,
- "fail": 6,
+ "fail": 24,
  "failures": [
   "movie-pathaan",
   "movie-jawan",
   "movie-tiger-3",
   "movie-dunki",
   "movie-kabir-singh",
-  "movie-animal"
+  "movie-animal",
+  "movie-gadar-2",
+  "movie-rocky-aur-rani",
+  "movie-brahmastra",
+  "movie-uri",
+  "movie-dangal",
+  "movie-3-idiots",
+  "movie-pk",
+  "movie-sanju",
+  "movie-war",
+  "movie-bhaag-milkha-bhaag",
+  "movie-rang-de-basanti",
+  "movie-queen",
+  "movie-andhadhun",
+  "movie-badhaai-ho",
+  "movie-stree",
+  "movie-drishyam",
+  "movie-shershaah",
+  "movie-aashiqui-2"
  ]
 }
