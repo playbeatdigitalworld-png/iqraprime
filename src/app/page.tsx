@@ -1,20 +1,8 @@
 import Hero from "@/components/Hero";
 import Row from "@/components/Row";
-import {
-  HERO_POOL,
-  MOVIE_TITLES,
-  DRAMA_TITLES,
-  NEW_RELEASES,
-  TOP_RATED,
-  TRENDING,
-  ALL_TITLES,
-} from "@/lib/catalog";
+import { COUNTS, DRAMA_TITLES, HERO_POOL, NEW_RELEASES, REGION_POOLS, SERIES_TITLES, TOP_RATED, TRENDING } from "@/lib/catalog";
 
-const bollywood = MOVIE_TITLES.filter((t) => t.language === "Hindi").slice(0, 14);
-const lollywood = MOVIE_TITLES.filter((t) =>
-  ["Punjabi", "Urdu"].includes(t.language)
-).slice(0, 14);
-const hollywood = MOVIE_TITLES.filter((t) => t.language === "English").slice(0, 14);
+const webSeries = SERIES_TITLES;
 
 export default function HomePage() {
   return (
@@ -24,16 +12,14 @@ export default function HomePage() {
       <div className="pb-4">
         <Row title="Trending Now" items={TRENDING.slice(0, 14)} ranked href="/movies" />
         <Row title="New Releases" items={NEW_RELEASES.slice(0, 14)} />
-        <Row
-          title="Pakistani Dramas"
-          items={DRAMA_TITLES.slice(0, 14)}
-          href="/dramas"
-          viewAllLabel="All dramas"
-        />
+        <Row title="Hindi Movies" items={REGION_POOLS.Bollywood.slice(0, 14)} href="/movies" />
+        <Row title="Web Series — Hindi & Urdu" items={webSeries.slice(0, 14)} href="/web-series" viewAllLabel="All series" />
+        <Row title="Pakistani Dramas" items={DRAMA_TITLES.slice(0, 14)} href="/dramas" viewAllLabel="All dramas" />
+        <Row title="Bangladeshi Cinema" items={REGION_POOLS.Bangladeshi.slice(0, 14)} />
+        <Row title="South Indian Cinema" items={REGION_POOLS["South Indian"].slice(0, 14)} />
+        <Row title="Lollywood Picks" items={REGION_POOLS["Pakistani / Lollywood"].slice(0, 14)} />
         <Row title="Top Rated of All Time" items={TOP_RATED.slice(0, 14)} ranked />
-        <Row title="Lollywood Picks" items={lollywood} />
-        <Row title="Bollywood Hits" items={bollywood} />
-        <Row title="Hollywood & International" items={hollywood} />
+        <Row title="Hollywood & International" items={REGION_POOLS["Hollywood & International"].slice(0, 14)} />
       </div>
 
       <section className="mx-auto max-w-7xl px-4 sm:px-6 mt-12" aria-label="About IQRAPRIME">
@@ -42,9 +28,9 @@ export default function HomePage() {
             <span className="text-gold gold-glow-text">Kahani Jo Dil Chhoo Jaye.</span>
           </p>
           <p className="mt-3 max-w-3xl text-sm text-mist leading-relaxed">
-            {ALL_TITLES.length} handpicked movies and Pakistani dramas — from Lollywood&apos;s biggest
-            blockbusters to PTV&apos;s golden-age classics. Install IQRAPRIME as an app and your
-            stories travel with you, online or offline.
+            {COUNTS.movies} movies across Bollywood, Lollywood, Bangladeshi, South Indian and
+            Hollywood cinema · {COUNTS.dramas} Pakistani dramas · {COUNTS.series} Hindi & Urdu
+            web series. Install IQRAPRIME as an app and your stories travel with you.
           </p>
         </div>
       </section>

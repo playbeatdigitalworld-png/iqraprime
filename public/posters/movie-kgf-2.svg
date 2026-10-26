@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="675" height="1000" viewBox="0 0 675 1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#251e12"/>
+      <stop offset="0.55" stop-color="#201a10"/>
+      <stop offset="1" stop-color="#0a0806"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.28" r="0.75">
+      <stop offset="0" stop-color="#FFBD24" stop-opacity="0.30"/>
+      <stop offset="0.5" stop-color="#FFBD24" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vig" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.45" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#05070B" stop-opacity="0.94"/>
+    </linearGradient>
+  </defs>
+  <rect width="675" height="1000" fill="url(#bg)"/>
+  <g opacity="0.16" stroke="#FFBD24" stroke-width="1.4" fill="none">
+    <circle cx="560" cy="120" r="150"/><circle cx="560" cy="120" r="110"/>
+    <path d="M60 220 L180 120 L300 220" opacity="0.7"/>
+    <path d="M420 760 L500 660 L580 760" opacity="0.5"/>
+  </g>
+  <rect width="675" height="1000" fill="url(#glow)"/>
+  <g opacity="0.5">
+    <polygon points="380,180 440,80 500,180" fill="#FFBD24" opacity="0.12"/>
+    <polygon points="251.99999999999994,320 311.99999999999994,220 371.99999999999994,320" fill="#FFE18A" opacity="0.10"/>
+  </g>
+  <text x="48" y="96" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="bold" letter-spacing="6" fill="#FFBD24">IQRAPRIME</text>
+  <rect x="48" y="112" width="64" height="4" fill="#D99A19"/>
+  <text x="48" y="164" font-family="Arial, Helvetica, sans-serif" font-size="17" letter-spacing="5" fill="#B8C0CC" opacity="0.85">FEATURE FILM</text>
+  <g font-family="Georgia, 'Times New Roman', serif" font-weight="bold" fill="#FFFFFF">
+    <text x="48" y="610" font-size="56">K.G.F:</text>
+    <text x="48" y="676" font-size="56">Chapter 2</text>
+  </g>
+  <text x="48" y="776" font-family="Arial, Helvetica, sans-serif" font-size="26" fill="#FFBD24" font-weight="bold">2022  ·  ★ 8.2</text>
+  <text x="48" y="816" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#B8C0CC" letter-spacing="2">Action • Crime</text>
+  <rect width="675" height="1000" fill="url(#vig)"/>
+  <rect x="10" y="10" width="655" height="980" fill="none" stroke="#FFBD24" stroke-opacity="0.25" stroke-width="2" rx="14"/>
+</svg>

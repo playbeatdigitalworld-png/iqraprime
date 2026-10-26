@@ -17,6 +17,7 @@
     "next": "16",
     "react": "19",
     "react-dom": "19",
+    "server-only": "^0.0.1",
     "tailwindcss": "4",
     "typescript": "5.9.2"
   }

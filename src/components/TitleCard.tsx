@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Title } from "@/lib/catalog";
+import PosterImg from "./PosterImg";
 
 export default function TitleCard({ t, rank }: { t: Title; rank?: number }) {
   return (
@@ -9,11 +10,10 @@ export default function TitleCard({ t, rank }: { t: Title; rank?: number }) {
       aria-label={`${t.title} (${t.year})`}
     >
       <div className="relative aspect-[2/3]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={t.poster}
+        <PosterImg
+          id={t.id}
+          fallback={t.poster}
           alt={`${t.title} poster`}
-          loading="lazy"
           className="h-full w-full object-cover"
         />
         {typeof rank === "number" && (
@@ -25,7 +25,7 @@ export default function TitleCard({ t, rank }: { t: Title; rank?: number }) {
           ★ {t.rating.toFixed(1)}
         </span>
         <span className="absolute left-2 bottom-2 rounded-md bg-gold/90 px-1.5 py-0.5 text-[10px] font-bold text-ink uppercase tracking-wide">
-          {t.kind === "drama" ? "Drama" : "Movie"}
+          {t.kind === "drama" ? "Drama" : t.kind === "series" ? "Series" : "Movie"}
         </span>
       </div>
       <div className="p-2.5">

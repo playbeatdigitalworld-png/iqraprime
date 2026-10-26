@@ -28,13 +28,8 @@ export default function Footer() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 grid gap-8 sm:grid-cols-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-gold to-gold-deep text-ink font-black">
-                I
-              </span>
-              <span className="font-display text-lg font-bold">
-                <span className="text-gold">IQRA</span>
-                <span className="text-white">PRIME</span>
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icons/logo-header.png" alt="IQRAPRIME" className="h-14 w-auto" />
             </div>
             <p className="mt-3 text-xs text-mist leading-relaxed max-w-xs">
               Kahani Jo Dil Chhoo Jaye — stories that touch the heart. Movies and Pakistani dramas,

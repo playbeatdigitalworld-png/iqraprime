@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ALL_TITLES, byId, related, DRAMA_EXTRA } from "@/lib/catalog";
-import Player from "@/components/Player";
+import { ALL_TITLES, byId, related, serialExtra } from "@/lib/catalog";
+import WatchSection from "@/components/WatchSection";
 import MyListButton from "@/components/MyListButton";
+import PosterImg from "@/components/PosterImg";
 import Row from "@/components/Row";
 
 export function generateStaticParams() {
@@ -28,9 +29,9 @@ export default async function TitlePage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   const t = byId(id);
   if (!t) notFound();
-  const drama = t.kind === "drama" ? DRAMA_EXTRA(t.id) : undefined;
-  const episodeList = drama
-    ? Array.from({ length: Math.min(drama.episodes, 24) }, (_, i) => i + 1)
+  const serial = serialExtra(t.id);
+  const episodeList = serial
+    ? Array.from({ length: Math.min(serial.episodes, 24) }, (_, i) => i + 1)
     : [];
 
   return (
@@ -45,9 +46,9 @@ export default async function TitlePage({ params }: { params: Promise<{ id: stri
       <div className="mx-auto max-w-7xl px-4 sm:px-6 -mt-40 relative z-10 grid gap-8 lg:grid-cols-[280px_1fr]">
         {/* Poster */}
         <div className="hidden lg:block">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={t.poster}
+          <PosterImg
+            id={t.id}
+            fallback={t.poster}
             alt={`${t.title} poster`}
             className="w-full rounded-2xl border border-gold/25 shadow-[0_16px_48px_rgba(0,0,0,0.6)]"
           />
@@ -56,7 +57,7 @@ export default async function TitlePage({ params }: { params: Promise<{ id: stri
         {/* Details */}
         <div className="fade-up">
           <p className="text-xs font-bold tracking-[0.3em] text-gold">
-            {t.kind === "drama" ? "PAKISTANI DRAMA" : "MOVIE"}
+            {t.kind === "movie" ? "MOVIE" : t.kind === "drama" ? "PAKISTANI DRAMA" : "WEB SERIES"}
           </p>
           <h1 className="mt-2 font-display text-3xl sm:text-5xl font-bold text-white gold-glow-text">
             {t.title}
@@ -101,11 +102,11 @@ export default async function TitlePage({ params }: { params: Promise<{ id: stri
             <h2 className="font-display text-xl font-bold text-white mb-4">
               Watch <span className="text-gold">{t.title}</span>
             </h2>
-            <Player title={t.title} poster={t.backdrop} />
-            {drama && (
+            <WatchSection title={t.title} year={t.year} poster={t.backdrop} />
+            {serial && (
               <div className="mt-6">
                 <h3 className="text-sm font-bold text-gold tracking-wide">
-                  EPISODES — SEASON {drama.seasons} · {drama.episodes} TOTAL
+                  EPISODES — SEASON {serial.seasons} · {serial.episodes} TOTAL
                 </h3>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {episodeList.map((n) => (
@@ -118,14 +119,14 @@ export default async function TitlePage({ params }: { params: Promise<{ id: stri
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate text-sm text-white">Episode {n}</span>
-                        <span className="block text-[11px] text-mist">{drama.episodeDuration} · {drama.network}</span>
+                        <span className="block text-[11px] text-mist">{serial.episodeDuration} · {serial.network}</span>
                       </span>
                     </div>
                   ))}
                 </div>
-                {drama.episodes > 24 && (
+                {serial.episodes > 24 && (
                   <p className="mt-3 text-xs text-mist">
-                    + {drama.episodes - 24} more episodes in this season
+                    + {serial.episodes - 24} more episodes in this season
                   </p>
                 )}
               </div>

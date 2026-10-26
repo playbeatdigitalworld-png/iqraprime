@@ -1,6 +1,8 @@
 // Generate branded SVG posters & backdrops for every title + PWA icons from logo
 import { MOVIES } from "../src/data/movies.ts";
+import { MOVIES_EXTRA } from "../src/data/movies-extra.ts";
 import { DRAMAS } from "../src/data/dramas.ts";
+import { WEB_SERIES } from "../src/data/webseries.ts";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -113,7 +115,9 @@ function backdropSVG(t) {
 
 const all = [
   ...MOVIES.map((m) => ({ ...m, kind: "movie" })),
+  ...MOVIES_EXTRA.map((m) => ({ ...m, kind: "movie" })),
   ...DRAMAS.map((d) => ({ ...d, kind: "drama" })),
+  ...WEB_SERIES.map((d) => ({ ...d, kind: "series" })),
 ];
 
 for (const t of all) {

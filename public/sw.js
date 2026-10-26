@@ -5,7 +5,7 @@
  * - Navigations: network-first with cache + /offline fallback
  * - NEVER caches: API calls, HLS streams (.m3u8/.ts/.mp4), query-string media
  */
-const VERSION = "iqraprime-v1.0.0";
+const VERSION = "iqraprime-v2.0.0";
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 const ART_CACHE = `${VERSION}-art`;
@@ -49,6 +49,7 @@ self.addEventListener("message", (event) => {
 const isArt = (url) =>
   url.pathname.startsWith("/posters/") ||
   url.pathname.startsWith("/backdrops/") ||
+  url.pathname.startsWith("/art/") ||
   url.pathname.startsWith("/icons/");
 
 const isStatic = (url) => url.pathname.startsWith("/_next/static/");

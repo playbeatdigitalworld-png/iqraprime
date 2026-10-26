@@ -10,9 +10,15 @@ export const metadata: Metadata = {
     template: "%s · IQRAPRIME",
   },
   description:
-    "IQRAPRIME — stream curated movies and Pakistani dramas. Kahani Jo Dil Chhoo Jaye. Install as an app and watch anywhere.",
+    "IQRAPRIME — stream movies from India, Pakistan, Bangladesh and Hollywood, plus Pakistani dramas and Hindi/Urdu web series. Install as an app and watch anywhere.",
   applicationName: "IQRAPRIME",
   manifest: "/manifest.webmanifest",
+  openGraph: {
+    title: "IQRAPRIME — Kahani Jo Dil Chhoo Jaye",
+    description: "Movies · Pakistani Dramas · Hindi & Urdu Web Series",
+    images: ["/og-image.png"],
+    type: "website",
+  },
   appleWebApp: {
     capable: true,
     title: "IQRAPRIME",

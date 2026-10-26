@@ -1,11 +1,16 @@
 import { MOVIES, type Movie } from "@/data/movies";
+import { MOVIES_EXTRA } from "@/data/movies-extra";
 import { DRAMAS, type Drama } from "@/data/dramas";
+import { WEB_SERIES } from "@/data/webseries";
+import { POSTER_MANIFEST } from "@/data/poster-manifest";
 
 export type { Movie, Drama };
 
+export type TitleKind = "movie" | "drama" | "series";
+
 export interface Title {
   id: string;
-  kind: "movie" | "drama";
+  kind: TitleKind;
   title: string;
   year: number;
   rating: number;
@@ -21,6 +26,13 @@ export interface Title {
   meta: string;
 }
 
+/** Real photo poster if fetched, else branded SVG art */
+const posterFor = (id: string, fallback: string): string =>
+  POSTER_MANIFEST[id] ? `/art/${POSTER_MANIFEST[id]}` : fallback;
+
+const kindLabel = (k: TitleKind) =>
+  k === "movie" ? "MOVIE" : k === "drama" ? "DRAMA SERIES" : "WEB SERIES";
+
 const movieToTitle = (m: Movie): Title => ({
   id: m.id,
   kind: "movie",
@@ -34,14 +46,14 @@ const movieToTitle = (m: Movie): Title => ({
   trending: m.trending,
   palette: m.palette as [string, string],
   synopsis: m.synopsis,
-  poster: `/posters/${m.id}.svg`,
+  poster: posterFor(m.id, `/posters/${m.id}.svg`),
   backdrop: `/backdrops/${m.id}.svg`,
   meta: `${m.duration} · ${m.language}`,
 });
 
-const dramaToTitle = (d: Drama): Title => ({
+const serialToTitle = (d: Drama, kind: TitleKind): Title => ({
   id: d.id,
-  kind: "drama",
+  kind,
   title: d.title,
   year: d.year,
   rating: d.rating,
@@ -52,24 +64,38 @@ const dramaToTitle = (d: Drama): Title => ({
   trending: d.trending,
   palette: d.palette as [string, string],
   synopsis: d.synopsis,
-  poster: `/posters/${d.id}.svg`,
+  poster: posterFor(d.id, `/posters/${d.id}.svg`),
   backdrop: `/backdrops/${d.id}.svg`,
   meta: `S${d.seasons} · ${d.episodes} Eps · ${d.network}`,
 });
 
 export const ALL_TITLES: Title[] = [
   ...MOVIES.map(movieToTitle),
-  ...DRAMAS.map(dramaToTitle),
+  ...MOVIES_EXTRA.map(movieToTitle),
+  ...DRAMAS.map((d) => serialToTitle(d, "drama")),
+  ...WEB_SERIES.map((d) => serialToTitle(d, "series")),
 ];
 
 export const MOVIE_TITLES = ALL_TITLES.filter((t) => t.kind === "movie");
 export const DRAMA_TITLES = ALL_TITLES.filter((t) => t.kind === "drama");
+export const SERIES_TITLES = ALL_TITLES.filter((t) => t.kind === "series");
+
+/** Region pools for the Movies page country filter */
+export const REGION_POOLS: Record<string, Title[]> = {
+  Bollywood: MOVIE_TITLES.filter((t) => t.language === "Hindi"),
+  "Pakistani / Lollywood": MOVIE_TITLES.filter((t) => ["Punjabi", "Urdu"].includes(t.language)),
+  Bangladeshi: MOVIE_TITLES.filter((t) => t.language === "Bangla"),
+  "South Indian": MOVIE_TITLES.filter((t) => ["Telugu", "Tamil", "Kannada", "Malayalam"].includes(t.language)),
+  "Hollywood & International": MOVIE_TITLES.filter((t) => ["English", "Korean"].includes(t.language)),
+};
 
 export const TRENDING = ALL_TITLES.filter((t) => t.trending).sort(
   (a, b) => b.popularity - a.popularity
 );
 
-export const HERO_POOL = [...TRENDING, ...ALL_TITLES.filter((t) => t.popularity >= 90)].slice(0, 5);
+export const HERO_POOL = [...TRENDING, ...ALL_TITLES.filter((t) => t.popularity >= 92)]
+  .filter((t, i, arr) => arr.findIndex((x) => x.id === t.id) === i)
+  .slice(0, 6);
 
 export const TOP_RATED = [...ALL_TITLES].sort((a, b) => b.rating - a.rating).slice(0, 20);
 
@@ -77,10 +103,9 @@ export const NEW_RELEASES = [...ALL_TITLES]
   .sort((a, b) => b.year - a.year || b.popularity - a.popularity)
   .slice(0, 20);
 
-export function byGenre(kind: "all" | "movie" | "drama", genre: string): Title[] {
-  const pool = kind === "movie" ? MOVIE_TITLES : kind === "drama" ? DRAMA_TITLES : ALL_TITLES;
-  if (!genre || genre === "All") return pool;
-  return pool.filter((t) => t.genres.some((g) => g.toLowerCase() === genre.toLowerCase()));
+export function byKind(kind: "all" | TitleKind): Title[] {
+  if (kind === "all") return ALL_TITLES;
+  return ALL_TITLES.filter((t) => t.kind === kind);
 }
 
 export function byId(id: string): Title | undefined {
@@ -107,15 +132,25 @@ export function searchTitles(q: string): Title[] {
   const query = q.trim().toLowerCase();
   if (!query) return [];
   return ALL_TITLES.filter((t) => {
-    const hay = [t.title, ...t.cast, ...t.genres, t.language, String(t.year)].join(" ").toLowerCase();
+    const hay = [t.title, ...t.cast, ...t.genres, t.language, t.kind, String(t.year)]
+      .join(" ")
+      .toLowerCase();
     return hay.includes(query);
   }).sort((a, b) => b.popularity - a.popularity);
 }
 
-export function dramaById(id: string): Drama | undefined {
-  return DRAMAS.find((d) => d.id === id);
+/** Serial extras (episodes etc.) for dramas and web series */
+export function serialExtra(id: string): Drama | undefined {
+  return DRAMAS.find((d) => d.id === id) || WEB_SERIES.find((d) => d.id === id);
 }
 
-export const DRAMA_EXTRA = (id: string): (Drama | undefined) => DRAMAS.find((d) => d.id === id);
-
 export const ALL_GENRES = Array.from(new Set(ALL_TITLES.flatMap((t) => t.genres))).sort();
+
+export const COUNTS = {
+  movies: MOVIE_TITLES.length,
+  dramas: DRAMA_TITLES.length,
+  series: SERIES_TITLES.length,
+  total: ALL_TITLES.length,
+};
+
+export { kindLabel };

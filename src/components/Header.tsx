@@ -9,6 +9,7 @@ const NAV = [
   { href: "/", label: "Home" },
   { href: "/movies", label: "Movies" },
   { href: "/dramas", label: "Dramas" },
+  { href: "/web-series", label: "Web Series" },
   { href: "/my-list", label: "My List" },
 ];
 
@@ -35,14 +36,13 @@ export default function Header() {
       }`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center gap-4">
-        <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="IQRAPRIME home">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-gold to-gold-deep text-ink font-black text-lg shadow-[0_0_16px_rgba(255,189,36,0.35)]">
-            I
-          </span>
-          <span className="font-display text-xl tracking-wide font-bold">
-            <span className="text-gold gold-glow-text">IQRA</span>
-            <span className="text-white">PRIME</span>
-          </span>
+        <Link href="/" className="flex items-center shrink-0" aria-label="IQRAPRIME home">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icons/logo-header.png"
+            alt="IQRAPRIME — Kahani Jo Dil Chhoo Jaye"
+            className="h-14 w-auto"
+          />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 ml-4" aria-label="Primary">
