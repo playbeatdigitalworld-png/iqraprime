@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import PrimePlayer from "./PrimePlayer";
+import IptvLineDialog from "./IptvLineDialog";
+import { encodeLine, readLine } from "@/hooks/useIptvLine";
 
 interface ResolveResponse {
   playable: boolean;
@@ -21,6 +23,7 @@ interface ResolveResponse {
 export default function WatchSection({ title, year, poster }: { title: string; year: number; poster: string }) {
   const [state, setState] = useState<"resolving" | "ready" | "unlinked">("resolving");
   const [res, setRes] = useState<ResolveResponse | null>(null);
+  const [lineDialog, setLineDialog] = useState(false);
   const attempted = useRef(false);
 
   useEffect(() => {
@@ -28,11 +31,28 @@ export default function WatchSection({ title, year, poster }: { title: string; y
     attempted.current = true;
     (async () => {
       try {
+        const headers: Record<string, string> = {};
+        const line = readLine();
+        if (line) headers["x-iptv-line"] = encodeLine(line);
+        // 1) server-configured provider line
         const r = await fetch(
           `/api/provider/resolve?title=${encodeURIComponent(title)}&year=${year}`,
           { cache: "no-store" }
         );
-        const data = (await r.json()) as ResolveResponse;
+        let data = (await r.json()) as ResolveResponse;
+        // 2) user's own line (device-stored) if server line isn't configured
+        if ((!data.playable || !data.url) && line) {
+          const r2 = await fetch(
+            `/api/xtream/resolve?kind=match&title=${encodeURIComponent(title)}&year=${year}`,
+            { headers, cache: "no-store" }
+          );
+          const d2 = (await r2.json()) as { found?: boolean; url?: string; name?: string; error?: string };
+          if (d2?.found && d2.url) {
+            data = { playable: true, configured: true, url: d2.url, name: d2.name, kind: "vod" };
+          } else if (d2?.error !== "no_line") {
+            data = { playable: false, configured: true };
+          }
+        }
         if (data.playable && data.url) {
           setRes(data);
           setState("ready");
@@ -77,11 +97,15 @@ export default function WatchSection({ title, year, poster }: { title: string; y
           <p className="font-display text-lg font-bold text-white">{title}</p>
           <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-mist">
             {res?.configured === false
-              ? "The playback line is not connected on this server yet. Once P_HOST / P_USER / P_PASS are set in the environment, this title plays automatically from the live provider library."
-              : "No stream for this title in the connected provider library. Browse the provider sections for the full playable catalog."}
+              ? "Connect your IPTV line once — then this title and the entire provider library play right here in the IQRAPRIME Player."
+              : "No stream for this title in the connected provider library. Browse the IPTV Library for everything your line offers."}
           </p>
+          <button onClick={() => setLineDialog(true)} className="btn-gold mt-4 rounded-lg px-5 py-2 text-xs font-bold">
+            {res?.configured === false ? "Connect IPTV Line" : "Manage Line"}
+          </button>
         </div>
       </div>
+      <IptvLineDialog open={lineDialog} onClose={() => setLineDialog(false)} onSaved={() => window.location.reload()} />
     </div>
   );
 }

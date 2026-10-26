@@ -1,0 +1,12 @@
+{
+ "ok": 0,
+ "fail": 6,
+ "failures": [
+  "movie-pathaan",
+  "movie-jawan",
+  "movie-tiger-3",
+  "movie-dunki",
+  "movie-kabir-singh",
+  "movie-animal"
+ ]
+}

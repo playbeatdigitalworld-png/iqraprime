@@ -1,51 +1,41 @@
-// Fetch REAL posters for every IQRAPRIME title via z-ai image-search,
-// download to public/art/, and emit src/data/poster-manifest.ts
+// Fetch REAL posters via z-ai image-search, save to public/posters-real/{id}.jpg
 import { MOVIES } from "../src/data/movies.ts";
-import { MOVIES_EXTRA } from "../src/data/movies-extra.ts";
 import { DRAMAS } from "../src/data/dramas.ts";
-import { WEB_SERIES } from "../src/data/webseries.ts";
 import fs from "node:fs";
 import path from "node:path";
 import { execFile } from "node:child_process";
 
 const ROOT = "/home/z/my-project/iqraprime-app";
-const ART = path.join(ROOT, "public", "art");
-fs.mkdirSync(ART, { recursive: true });
+const OUT = path.join(ROOT, "public", "posters-real");
+const TMP = "/tmp/posters";
+fs.mkdirSync(OUT, { recursive: true });
+fs.mkdirSync(TMP, { recursive: true });
 
-const ALL = [
-  ...MOVIES.map((m) => ({ id: m.id, title: m.title, year: m.year, kind: "movie", lang: m.language })),
-  ...MOVIES_EXTRA.map((m) => ({ id: m.id, title: m.title, year: m.year, kind: "movie", lang: m.language })),
-  ...DRAMAS.map((d) => ({ id: d.id, title: d.title, year: d.year, kind: "drama", lang: d.language })),
-  ...WEB_SERIES.map((d) => ({ id: d.id, title: d.title, year: d.year, kind: "series", lang: d.language })),
+const titles = [
+  ...MOVIES.map((m) => ({ id: m.id, title: m.title, year: m.year, kind: "movie" })),
+  ...DRAMAS.map((d) => ({ id: d.id, title: d.title, year: d.year, kind: "drama" })),
 ];
 
-const manifest = {};
-const LOG = path.join(ART, "..", "..", "scripts", "poster-progress.log");
+const status = { done: 0, ok: 0, fail: 0, total: titles.length, results: {} };
 
-function log(msg) {
-  fs.appendFileSync(LOG, `${new Date().toISOString().slice(11, 19)} ${msg}\n`);
-}
-
-function searchOnce(item) {
-  const kindQuery =
-    item.kind === "movie" ? (item.lang === "Bangla" ? "bangladeshi film" : "movie") : item.kind === "drama" ? "pakistani drama serial" : "web series";
-  const q = `${item.title} ${item.year} ${kindQuery} official poster`;
+function search(task, attempt = 1) {
   return new Promise((resolve) => {
+    const q =
+      task.kind === "drama"
+        ? `${task.title} Pakistani drama serial poster HD`
+        : `${task.title} ${task.year} movie official poster HD`;
+    const out = path.join(TMP, `${task.id}.json`);
     execFile(
       "z-ai",
-      ["image-search", "-q", q, "--count", "2", "--gl", "us", "--no-rank"],
-      { timeout: 110000, maxBuffer: 10 * 1024 * 1024 },
-      (err, stdout) => {
-        if (err && !stdout) return resolve(null);
-        try {
-          // CLI prints banner lines then the JSON document
-          const start = stdout.indexOf("{");
-          if (start === -1) return resolve(null);
-          const data = JSON.parse(stdout.slice(start));
-          resolve(data?.success && data.results?.length ? data.results : null);
-        } catch {
-          resolve(null);
+      ["image-search", "-q", q, "--count", "3", "--gl", "us", "--no-rank", "-o", out],
+      { timeout: 100000 },
+      async (err) => {
+        const msg = String((err as { message?: string })?.message || err || "");
+        if (/429|Too many/i.test(msg) && attempt <= 8) {
+          await new Promise((r) => setTimeout(r, 60000)); // full cooldown wait
+          return resolve(search(task, attempt + 1));
         }
+        resolve({ task, err, out });
       }
     );
   });
@@ -53,12 +43,12 @@ function searchOnce(item) {
 
 async function download(url, dest) {
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
+    const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
     if (!res.ok) return false;
-    const type = res.headers.get("content-type") || "";
-    if (!type.startsWith("image/")) return false;
+    const ct = res.headers.get("content-type") || "";
+    if (!ct.startsWith("image/")) return false;
     const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length < 6000) return false; // too small = junk
+    if (buf.length < 10000) return false;
     fs.writeFileSync(dest, buf);
     return true;
   } catch {
@@ -66,93 +56,36 @@ async function download(url, dest) {
   }
 }
 
-async function processItem(item, attempt = 0) {
-  const results = await searchOnce(item);
-  if (!results) {
-    if (attempt < 5) {
-      await new Promise((r) => setTimeout(r, 20000 + attempt * 20000));
-      return processItem(item, attempt + 1);
+async function worker(queue) {
+  while (queue.length) {
+    const task = queue.shift();
+    if (!task) break;
+    const dest = path.join(OUT, `${task.id}.jpg`);
+    if (fs.existsSync(dest)) {
+      status.results[task.id] = "cached";
+      status.done++; status.ok++;
+      continue;
     }
-    return false;
-  }
-  for (const r of [...results].sort((a, b) => {
-    const aw = parseInt(String(a.original_width)) || 0;
-    const ah = parseInt(String(a.original_height)) || 0;
-    const bw = parseInt(String(b.original_width)) || 0;
-    const bh = parseInt(String(b.original_height)) || 0;
-    const aPortrait = ah > aw ? 0 : 1;
-    const bPortrait = bh > bw ? 0 : 1;
-    return aPortrait - bPortrait || bh - ah;
-  })) {
-    const url = r.original_url;
-    if (!url) continue;
-    const w = parseInt(String(r.original_width)) || 0;
-    const h = parseInt(String(r.original_height)) || 0;
-    if (w && h && w > h * 1.3) continue; // skip landscape thumbnails unless nothing better
-    const ext = /\.png(\?|$)/i.test(url) ? "png" : /\.webp(\?|$)/i.test(url) ? "webp" : "jpg";
-    const dest = path.join(ART, `${item.id}.${ext}`);
-    if (await download(url, dest)) {
-      manifest[item.id] = `${item.id}.${ext}`;
-      log(`OK  ${item.id}  ${r.original_width}x${r.original_height}  ${r.source}`);
-      return true;
+    const { err, out } = await search(task);
+    let ok = false;
+    if (!err && fs.existsSync(out)) {
+      try {
+        const data = JSON.parse(fs.readFileSync(out, "utf8"));
+        if (data.success && Array.isArray(data.results)) {
+          for (const r of data.results) {
+            if (await download(r.original_url, dest)) { ok = true; break; }
+          }
+        }
+      } catch { /* parse fail */ }
     }
+    status.results[task.id] = ok ? "ok" : "fail";
+    status.done++; ok ? status.ok++ : status.fail++;
+    fs.writeFileSync(path.join(TMP, "status.json"), JSON.stringify(status, null, 1));
   }
-  return false;
 }
 
-async function main() {
-  log(`=== START ${ALL.length} titles ===`);
-  const CONCURRENCY = 1;
-  const GAP_MS = 8000;
-  let done = 0;
-  let ok = 0;
-  const queue = [...ALL];
-
-  // Keep existing art (idempotent re-run) and seed art/index.json
-  const artIndex = {};
-  const remaining = queue.filter((it) => {
-    const existing = fs.existsSync(path.join(ART, `${it.id}.jpg`)) || fs.existsSync(path.join(ART, `${it.id}.png`)) || fs.existsSync(path.join(ART, `${it.id}.webp`));
-    if (existing) {
-      const f = fs.readdirSync(ART).find((x) => x.startsWith(`${it.id}.`));
-      if (f) {
-        manifest[it.id] = f;
-        artIndex[it.id] = f;
-      }
-    }
-    return !existing;
-  });
-  const writeArtIndex = () => {
-    fs.writeFileSync(path.join(ART, "index.json"), JSON.stringify(artIndex));
-    // Also emit the TS manifest for build-time inlining
-    const entries = Object.entries(manifest)
-      .map(([k, v]) => `  "${k}": "${v}",`)
-      .join("\n");
-    fs.writeFileSync(
-      path.join(ROOT, "src", "data", "poster-manifest.ts"),
-      `// AUTO-GENERATED by scripts/fetch-posters.mjs — id → real poster filename in /public/art\nexport const POSTER_MANIFEST: Record<string, string> = {\n${entries}\n};\n`
-    );
-  };
-  writeArtIndex();
-  log(`skipping ${ALL.length - remaining.length} already-fetched`);
-
-  async function worker() {
-    while (queue.length) {
-      const item = queue.shift();
-      if (!item) break;
-      const success = await processItem(item);
-      done++;
-      if (success) {
-        ok++;
-        artIndex[item.id] = manifest[item.id];
-        writeArtIndex();
-      }
-      if (done % 10 === 0) log(`progress ${done} done, ok=${ok}`);
-      await new Promise((r) => setTimeout(r, GAP_MS));
-    }
-  }
-
-  await Promise.all(Array.from({ length: CONCURRENCY }, worker));
-  log(`=== DONE ok=${ok}/${ALL.length} ===`);
-}
-
-main();
+const queue = [...titles];
+const WORKERS = 2;
+await Promise.all(Array.from({ length: WORKERS }, () => worker(queue)));
+fs.writeFileSync(path.join(TMP, "status.json"), JSON.stringify(status, null, 1));
+console.log(`DONE ok=${status.ok} fail=${status.fail} total=${status.total}`);

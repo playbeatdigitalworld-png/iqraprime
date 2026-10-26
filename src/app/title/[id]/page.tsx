@@ -70,7 +70,7 @@ export default async function TitlePage({ params }: { params: Promise<{ id: stri
             <span className="text-gold/60">•</span>
             <span>{t.meta}</span>
             <span className="text-gold/60">•</span>
-            <span>{t.language}</span>
+            
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {t.genres.map((g) => (
