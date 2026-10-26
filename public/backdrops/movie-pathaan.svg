@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#795109"/>
+      <stop offset="0.6" stop-color="#6e4a08"/>
+      <stop offset="1" stop-color="#160c03"/>
+    </linearGradient>
+    <linearGradient id="vig" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#05070B" stop-opacity="0.96"/>
+      <stop offset="0.6" stop-color="#05070B" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <g opacity="0.14" stroke="#FFBD24" stroke-width="2" fill="none">
+    <circle cx="980" cy="200" r="220"/><circle cx="980" cy="200" r="150"/>
+    <path d="M700 620 L860 420 L1020 620" />
+    <path d="M950 620 L1060 480 L1170 620" opacity="0.7"/>
+  </g>
+  <rect width="1280" height="720" fill="url(#vig)"/>
+  <text x="64" y="120" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="bold" letter-spacing="7" fill="#FFBD24">IQRAPRIME</text>
+  <rect x="64" y="138" width="72" height="5" fill="#D99A19"/>
+</svg>
