@@ -2,103 +2,111 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import VideoPlayer from "@/components/VideoPlayer";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import PrimePlayer from "@/components/PrimePlayer";
 import IptvLineDialog from "@/components/IptvLineDialog";
-import { encodeLine, readLine, useIptvLine } from "@/hooks/useIptvLine";
-
-interface Episode {
-  id: string;
-  episode_num: number;
-  title: string;
-  container_extension: string;
-  image?: string;
-  plot?: string;
-  duration?: string;
-  season: number;
-}
-
-function authHeaders(): Record<string, string> {
-  const l = readLine();
-  return l ? { "x-iptv-line": encodeLine(l) } : {};
-}
+import { readLine, useIptvLine } from "@/hooks/useIptvLine";
+import {
+  episodeStreamUrl,
+  getSeriesInfo,
+  getVodInfo,
+  movieStreamUrl,
+  type EpisodeInfo,
+  type SeriesInfoResult,
+  type VodInfoResult,
+} from "@/lib/iptv-client";
 
 export default function ProviderTitlePage() {
   const params = useParams<{ kind: string; id: string }>();
   const kind = params?.kind === "series" ? "series" : "movie";
   const id = Number(params?.id);
-  const { connected, ready } = useIptvLine();
+  const { connectedSoft, ready, ping } = useIptvLine();
 
-  const [meta, setMeta] = useState<{ name: string; poster: string; plot: string; genre: string; year?: number | null; rating?: number } | null>(null);
-  const [episodes, setEpisodes] = useState<Episode[]>([]);
-  const [seasons, setSeasons] = useState<number[]>([]);
+  const [meta, setMeta] = useState<VodInfoResult | SeriesInfoResult | null>(null);
   const [season, setSeason] = useState<number | null>(null);
+  const [currentEp, setCurrentEp] = useState<EpisodeInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
   const [lineDialog, setLineDialog] = useState(false);
 
   useEffect(() => {
-    if (!ready || !connected || !id) return;
+    if (!ready || !id) return;
+    const l = readLine();
+    if (!l) return;
     let dead = false;
     setLoading(true);
-
+    setErr(null);
     (async () => {
-      if (kind === "movie") {
-        const r = await fetch(`/api/xtream/catalog?type=movies&page_size=1&page=1`, { headers: authHeaders(), cache: "no-store" }).catch(() => null);
-        // find item in full list via catalog search by id isn't supported — use series-free approach:
-        const lr = await fetch(`/api/xtream/resolve?kind=movie&id=${id}`, { headers: authHeaders(), cache: "no-store" }).catch(() => null);
-        const rd = lr ? await lr.json().catch(() => null) : null;
-        // fetch display info from catalog (search all pages is heavy) — use vod_info instead:
-        const pr = await fetch(`/api/xtream/ping`, { headers: authHeaders(), cache: "no-store" }).catch(() => null);
-        void pr; void r;
-        if (!dead) {
-          setMeta({
-            name: rd?.name ? String(rd.name) : `Movie #${id}`,
-            poster: "",
-            plot: "",
-            genre: "",
-          });
-          setLoading(false);
+      try {
+        if (kind === "movie") {
+          const info = await getVodInfo(l, id);
+          if (!dead) setMeta(info);
+        } else {
+          const info = await getSeriesInfo(l, id);
+          if (!dead && info) {
+            setMeta(info);
+            const seasons = Array.from(new Set(info.episodes.map((e) => e.season))).sort((a, b) => a - b);
+            setSeason(seasons[0] ?? 1);
+            const first = info.episodes.find((e) => e.season === (seasons[0] ?? 1));
+            setCurrentEp(first ?? null);
+          }
         }
-      } else {
-        const r = await fetch(`/api/xtream/series?id=${id}`, { headers: authHeaders(), cache: "no-store" }).catch(() => null);
-        const d = r ? await r.json().catch(() => null) : null;
-        if (!dead && d?.episodes) {
-          const seasons = Array.from(new Set((d.episodes as Episode[]).map((e) => e.season))).sort((a, b) => a - b);
-          setEpisodes(d.episodes as Episode[]);
-          setSeasons(seasons);
-          setSeason(seasons[0] ?? 1);
-          setMeta({
-            name: d.info?.name || `Series #${id}`,
-            poster: d.info?.cover || "",
-            plot: d.info?.plot || "",
-            genre: d.info?.genre || "",
-            year: d.info?.releaseDate ? new Date(d.info.releaseDate).getFullYear() : null,
-            rating: Number(d.info?.rating) || 0,
-          });
-        }
+      } catch (e) {
+        if (!dead) setErr((e as Error).message || "Could not load this title from the provider.");
+      } finally {
         if (!dead) setLoading(false);
       }
     })();
-
     return () => { dead = true; };
-  }, [kind, id, connected, ready]);
+  }, [kind, id, ready]);
 
-  const resolveMovie = useCallback(async () => {
-    const r = await fetch(`/api/xtream/resolve?kind=movie&id=${id}`, { headers: authHeaders(), cache: "no-store" });
-    const d = await r.json();
-    return d?.url || null;
-  }, [id]);
+  const episodes = useMemo(() => (meta && "episodes" in meta ? meta.episodes : []), [meta]);
+  const seasons = useMemo(
+    () => Array.from(new Set(episodes.map((e) => e.season))).sort((a, b) => a - b),
+    [episodes]
+  );
+  const seasonEpisodes = useMemo(
+    () => episodes.filter((e) => e.season === (season ?? seasons[0] ?? 1)),
+    [episodes, season, seasons]
+  );
 
-  const seasonEpisodes = episodes.filter((e) => e.season === (season ?? seasons[0] ?? 1));
+  const movieUrl = useCallback((): string | null => {
+    const l = readLine();
+    if (!l || kind !== "movie") return null;
+    const container = (meta as VodInfoResult | null)?.container || "mp4";
+    return movieStreamUrl(l, id, container);
+  }, [kind, id, meta]);
+
+  const episodeUrl = useCallback((): string | null => {
+    const l = readLine();
+    if (!l || !currentEp) return null;
+    return episodeStreamUrl(l, Number(currentEp.id), currentEp.container_extension || "mp4");
+  }, [currentEp]);
+
+  const isSeries = kind === "series";
+  const displayTitle = isSeries
+    ? currentEp
+      ? `S${currentEp.season} · E${currentEp.episode_num} — ${(meta as SeriesInfoResult)?.name || `Series #${id}`}`
+      : (meta as SeriesInfoResult)?.name || `Series #${id}`
+    : (meta as VodInfoResult)?.name || `Movie #${id}`;
+  const poster = (meta?.poster || "").trim();
+  const activeSrc = isSeries ? episodeUrl() : movieUrl();
 
   if (!ready) return <div className="mx-auto max-w-5xl px-4 pt-10 h-96 animate-pulse rounded-2xl bg-navy" />;
 
-  if (!connected) {
+  if (!connectedSoft) {
     return (
       <div className="mx-auto max-w-3xl px-4 pt-16 pb-20 text-center">
-        <h1 className="font-display text-2xl font-bold text-white">IPTV line required</h1>
-        <p className="mt-3 text-sm text-mist">Connect your line to play this title in the IQRAPRIME Player.</p>
-        <button onClick={() => setLineDialog(true)} className="btn-gold mt-6 rounded-lg px-6 py-2.5 text-sm">Connect IPTV Line</button>
+        <h1 className="font-display text-2xl font-bold text-white">IPTV line not connected</h1>
+        <p className="mt-3 text-sm text-mist">
+          {ping && !ping.auth && ping.error === "rejected"
+            ? "Your line was rejected by the provider — check the username and password in line settings."
+            : "The provider server could not be reached. Check the line settings and try again."}
+        </p>
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <button onClick={() => setLineDialog(true)} className="btn-gold rounded-lg px-6 py-2.5 text-sm">Line Settings</button>
+          <Link href="/iptv" className="btn-ghost rounded-lg px-6 py-2.5 text-sm">← Library</Link>
+        </div>
         <IptvLineDialog open={lineDialog} onClose={() => setLineDialog(false)} />
       </div>
     );
@@ -110,42 +118,67 @@ export default function ProviderTitlePage() {
 
       <div className="mt-4 grid gap-8 lg:grid-cols-[1fr_300px]">
         <div>
-          {kind === "movie" ? (
-            <VideoPlayer resolveUrl={resolveMovie} title={meta?.name || `Movie #${id}`} poster={meta?.poster || undefined} />
+          {loading ? (
+            <div className="aspect-video w-full animate-pulse rounded-xl bg-navy" />
+          ) : err ? (
+            <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-8 text-center">
+              <p className="font-display text-lg text-white">Could not open this title</p>
+              <p className="mt-2 text-sm leading-relaxed text-mist">{err}</p>
+            </div>
+          ) : activeSrc ? (
+            <PrimePlayer
+              key={isSeries ? `ep-${currentEp?.id}` : `mv-${id}`}
+              src={activeSrc}
+              title={displayTitle}
+              poster={poster || undefined}
+              badge={isSeries ? "WEB SERIES" : "MOVIE"}
+            />
           ) : (
-            <>
-              <VideoPlayer
-                key={`ep-${seasonEpisodes[0]?.id ?? "none"}`}
-                src={undefined}
-                title={seasonEpisodes[0] ? `S${season}·E${seasonEpisodes[0].episode_num} — ${meta?.name}` : (meta?.name || `Series #${id}`)}
-                poster={seasonEpisodes[0]?.image || meta?.poster || undefined}
-                resolveUrl={async () => {
-                  const first = seasonEpisodes[0];
-                  if (!first) return null;
-                  const r = await fetch(`/api/xtream/resolve?kind=episode&id=${first.id}&ext=${first.container_extension}`, { headers: authHeaders(), cache: "no-store" });
-                  const d = await r.json();
-                  return d?.url || null;
-                }}
-              />
-              {seasons.length > 1 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {seasons.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSeason(s)}
-                      className={`rounded-full px-4 py-1.5 text-xs font-semibold border transition ${season === s ? "bg-gold text-ink border-gold" : "border-gold/25 text-mist hover:text-gold"}`}
-                    >
-                      Season {s}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className="mt-4 grid gap-2">
-                {seasonEpisodes.map((e) => (
-                  <EpisodeRow key={e.id} e={e} />
-                ))}
-              </div>
-            </>
+            <div className="rounded-xl border border-gold/20 bg-navy/60 p-8 text-center">
+              <p className="text-sm text-mist">{isSeries ? "No episode selected." : "Stream unavailable."}</p>
+            </div>
+          )}
+
+          {isSeries && seasons.length > 1 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {seasons.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSeason(s)}
+                  className={`rounded-full px-4 py-1.5 text-xs font-semibold border transition ${season === s ? "bg-gold text-ink border-gold" : "border-gold/25 text-mist hover:text-gold"}`}
+                >
+                  Season {s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {isSeries && (
+            <div className="mt-4 space-y-2">
+              <h2 className="text-xs font-bold tracking-widest text-gold">EPISODES ({seasonEpisodes.length})</h2>
+              {seasonEpisodes.map((e) => (
+                <button
+                  key={e.id}
+                  onClick={() => setCurrentEp(e)}
+                  className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
+                    currentEp?.id === e.id
+                      ? "border-gold bg-gold/10"
+                      : "border-gold/15 bg-navy/70 hover:border-gold/40"
+                  }`}
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gold/15 text-gold text-xs font-bold">
+                    {String(e.episode_num).padStart(2, "0")}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={`block truncate text-sm ${currentEp?.id === e.id ? "text-gold" : "text-white"}`}>{e.title}</span>
+                    <span className="block text-[11px] text-mist">
+                      Season {e.season}{e.duration ? ` · ${e.duration}` : ""}
+                    </span>
+                  </span>
+                  <span className={`text-sm ${currentEp?.id === e.id ? "text-gold" : "text-gold/60"}`}>▶</span>
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
@@ -154,55 +187,22 @@ export default function ProviderTitlePage() {
             <div className="h-64 animate-pulse rounded-xl bg-navy" />
           ) : (
             <div>
-              {meta?.poster && (
+              {poster && (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={meta.poster} alt="" className="w-full rounded-xl border border-gold/20" />
+                <img src={poster} alt="" className="w-full rounded-xl border border-gold/20" />
               )}
-              <h1 className="mt-3 font-display text-2xl font-bold text-white">{meta?.name}</h1>
+              <h1 className="mt-3 font-display text-2xl font-bold text-white">
+                {isSeries ? (meta as SeriesInfoResult)?.name : (meta as VodInfoResult)?.name}
+              </h1>
               {meta?.genre && <p className="mt-1 text-xs text-gold">{meta.genre}</p>}
+              {isSeries && episodes.length > 0 && (
+                <p className="mt-1 text-xs text-mist">{episodes.length} episodes · {seasons.length} season{seasons.length > 1 ? "s" : ""}</p>
+              )}
               {meta?.plot && <p className="mt-3 text-sm leading-relaxed text-mist line-clamp-6">{meta.plot}</p>}
             </div>
           )}
         </aside>
       </div>
-    </div>
-  );
-}
-
-function EpisodeRow({ e }: { e: Episode }) {
-  const [open, setOpen] = useState(false);
-  const [url, setUrl] = useState<string | null>(null);
-
-  const play = async () => {
-    setOpen((v) => !v);
-    if (!url) {
-      const r = await fetch(`/api/xtream/resolve?kind=episode&id=${e.id}&ext=${e.container_extension}`, { headers: authHeaders(), cache: "no-store" });
-      const d = await r.json();
-      setUrl(d?.url || null);
-    }
-  };
-
-  return (
-    <div className="rounded-xl border border-gold/15 bg-navy/70">
-      <button onClick={play} className="flex w-full items-center gap-3 px-4 py-3 text-left hover:border-gold/40">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gold/15 text-gold text-xs font-bold">
-          {String(e.episode_num).padStart(2, "0")}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm text-white">{e.title}</span>
-          <span className="block text-[11px] text-mist">Season {e.season}{e.duration ? ` · ${e.duration}` : ""}</span>
-        </span>
-        <span className="text-gold">{open ? "▾" : "▶"}</span>
-      </button>
-      {open && (
-        <div className="px-4 pb-4">
-          {url ? (
-            <VideoPlayer key={e.id} src={url} title={e.title} poster={e.image} />
-          ) : (
-            <p className="text-xs text-mist">Resolving episode stream…</p>
-          )}
-        </div>
-      )}
     </div>
   );
 }

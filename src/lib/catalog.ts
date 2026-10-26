@@ -3,6 +3,7 @@ import { MOVIES_EXTRA } from "@/data/movies-extra";
 import { DRAMAS, type Drama } from "@/data/dramas";
 import { WEB_SERIES } from "@/data/webseries";
 import { POSTER_MANIFEST } from "@/data/poster-manifest";
+import { BACKDROP_MANIFEST } from "@/data/backdrop-manifest";
 
 export type { Movie, Drama };
 
@@ -30,6 +31,14 @@ export interface Title {
 const posterFor = (id: string, fallback: string): string =>
   POSTER_MANIFEST[id] ? `/art/${POSTER_MANIFEST[id]}` : fallback;
 
+/** Hero-grade backdrop: real fetched still → real poster crop → branded SVG art */
+const backdropFor = (id: string): string =>
+  BACKDROP_MANIFEST[id]
+    ? `/backdrops/${BACKDROP_MANIFEST[id]}`
+    : POSTER_MANIFEST[id]
+      ? `/art/${POSTER_MANIFEST[id]}`
+      : `/backdrops/${id}.svg`;
+
 const kindLabel = (k: TitleKind) =>
   k === "movie" ? "MOVIE" : k === "drama" ? "DRAMA SERIES" : "WEB SERIES";
 
@@ -47,7 +56,7 @@ const movieToTitle = (m: Movie): Title => ({
   palette: m.palette as [string, string],
   synopsis: m.synopsis,
   poster: posterFor(m.id, `/posters/${m.id}.svg`),
-  backdrop: `/backdrops/${m.id}.svg`,
+  backdrop: backdropFor(m.id),
   meta: `${m.duration} · ${m.language}`,
 });
 
@@ -65,7 +74,7 @@ const serialToTitle = (d: Drama, kind: TitleKind): Title => ({
   palette: d.palette as [string, string],
   synopsis: d.synopsis,
   poster: posterFor(d.id, `/posters/${d.id}.svg`),
-  backdrop: `/backdrops/${d.id}.svg`,
+  backdrop: backdropFor(d.id),
   meta: `S${d.seasons} · ${d.episodes} Eps · ${d.network}`,
 });
 

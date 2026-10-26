@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { encodeLine, saveLine, type IptvLine } from "@/hooks/useIptvLine";
+import { DEFAULT_LINE, checkAuth, normalizeLine } from "@/lib/iptv-client";
+import { readSavedLine, resetLine, saveLine, type IptvLine } from "@/hooks/useIptvLine";
 
 interface Props {
   open: boolean;
@@ -10,21 +11,22 @@ interface Props {
   onSaved?: () => void;
 }
 
-const DEFAULT_HOST = "stream.playbeat.live:8880";
-
-/** Connect your own IPTV (Xtream Codes) line — stored on this device only. */
+/** Connect / manage the IPTV (Xtream Codes) line. App ships with a built-in default line. */
 export default function IptvLineDialog({ open, onClose, initial, onSaved }: Props) {
-  const [host, setHost] = useState(initial?.host || DEFAULT_HOST);
-  const [user, setUser] = useState(initial?.user || "");
-  const [pass, setPass] = useState(initial?.pass || "");
+  const [host, setHost] = useState("");
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [hasSaved, setHasSaved] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setHost(initial?.host || DEFAULT_HOST);
-      setUser(initial?.user || "");
-      setPass(initial?.pass || "");
+      const l = initial || readSavedLine();
+      setHost(l?.host || DEFAULT_LINE.host);
+      setUser(l?.user || DEFAULT_LINE.user);
+      setPass(l?.pass || DEFAULT_LINE.pass);
+      setHasSaved(Boolean(readSavedLine()));
       setResult(null);
     }
   }, [open, initial]);
@@ -34,27 +36,52 @@ export default function IptvLineDialog({ open, onClose, initial, onSaved }: Prop
   const test = async () => {
     setTesting(true);
     setResult(null);
+    const l = normalizeLine({ host, user, pass });
+    if (!l) {
+      setResult({ ok: false, msg: "Host, username and password are all required." });
+      setTesting(false);
+      return;
+    }
     try {
-      const r = await fetch("/api/xtream/ping", {
-        headers: { "x-iptv-line": encodeLine({ host, user, pass }) },
-        cache: "no-store",
-      });
-      const d = (await r.json()) as { auth?: boolean; status?: string; expiry?: string | null; error?: string };
+      const d = await checkAuth(l);
       if (d.auth) {
-        setResult({ ok: true, msg: `Line connected — status ${d.status || "Active"}${d.expiry ? `, valid till ${new Date(d.expiry).toLocaleDateString()}` : ""}` });
+        setResult({
+          ok: true,
+          msg: `Line connected — status ${d.status || "Active"}${d.expiry ? `, valid till ${new Date(d.expiry).toLocaleDateString()}` : ""}`,
+        });
       } else {
-        setResult({ ok: false, msg: d.error === "provider_error" || !d.error ? "Could not reach provider — check host." : `Line rejected: ${d.error}` });
+        setResult({ ok: false, msg: "Line rejected by the provider — check username & password." });
       }
-    } catch {
-      setResult({ ok: false, msg: "Network error while contacting provider." });
+    } catch (e) {
+      const code = (e as Error & { code?: string }).code || "error";
+      setResult({
+        ok: false,
+        msg:
+          code === "unreachable"
+            ? (e as Error).message
+            : code === "timeout"
+              ? "Provider did not respond — server may be offline."
+              : `Could not connect (${code}). Check the server address.`,
+      });
     }
     setTesting(false);
   };
 
   const save = () => {
-    saveLine({ host, user, pass });
+    const l = normalizeLine({ host, user, pass });
+    if (!l) return;
+    saveLine(l);
     onSaved?.();
     onClose();
+  };
+
+  const useDefault = () => {
+    resetLine();
+    setHost(DEFAULT_LINE.host);
+    setUser(DEFAULT_LINE.user);
+    setPass(DEFAULT_LINE.pass);
+    setHasSaved(false);
+    onSaved?.();
   };
 
   return (
@@ -62,11 +89,11 @@ export default function IptvLineDialog({ open, onClose, initial, onSaved }: Prop
       <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" />
       <div className="relative w-full max-w-md rounded-2xl border border-gold/30 bg-navy p-6 fade-up" onClick={(e) => e.stopPropagation()}>
         <h2 id="line-title" className="font-display text-xl font-bold text-white">
-          Connect <span className="text-gold">IPTV Line</span>
+          IPTV <span className="text-gold">Line</span>
         </h2>
         <p className="mt-1.5 text-xs leading-relaxed text-mist">
-          Enter your Xtream Codes line from your provider panel. Unlocks the full movies & web-series
-          library with real playback. Stored on this device only.
+          IQRAPRIME ships with a built-in PlayBeat line — it connects automatically. You can point the
+          app to any other Xtream Codes line here. Stored on this device only.
         </p>
 
         <div className="mt-5 space-y-3">
@@ -114,6 +141,11 @@ export default function IptvLineDialog({ open, onClose, initial, onSaved }: Prop
             Save & connect
           </button>
         </div>
+        {hasSaved && (
+          <button onClick={useDefault} className="mt-3 w-full text-center text-xs text-gold hover:text-gold-soft">
+            Reset to the built-in IQRAPRIME line
+          </button>
+        )}
         <button onClick={onClose} className="mt-3 w-full text-center text-xs text-mist hover:text-white">
           Cancel
         </button>

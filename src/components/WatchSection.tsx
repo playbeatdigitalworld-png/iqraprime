@@ -3,22 +3,57 @@
 import { useEffect, useRef, useState } from "react";
 import PrimePlayer from "./PrimePlayer";
 import IptvLineDialog from "./IptvLineDialog";
-import { encodeLine, readLine } from "@/hooks/useIptvLine";
+import { readLine } from "@/hooks/useIptvLine";
+import { getVodStreams, movieStreamUrl, type VodStream } from "@/lib/iptv-client";
 
 interface ResolveResponse {
   playable: boolean;
-  configured?: boolean;
   url?: string;
   name?: string;
-  kind?: string;
-  episodes?: number;
   message?: string;
+}
+
+const norm = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/\((19|20)\d{2}\)/g, " ")
+    .replace(/[._\-+:[\]']/g, " ")
+    .replace(/\b(4k|1080p|720p|480p|hdrip|webrip|web[\s-]?dl|bluray|bdrip|hdtv|x264|x265|hevc|aac|aac5\.1|hq|hdr|multi|dual[\s-]?audio|hindi|urdu|tamil|telugu|punjabi|malayalam|bangla|english|movie|film|full|hd|dubbed)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/** Score a provider stream against a curated title (name + year). */
+function scoreStream(v: VodStream, target: string, year: number): number {
+  const n = norm(v.name || "");
+  if (!n) return 0;
+  const t = norm(target);
+  if (!t) return 0;
+  let s = 0;
+  if (n === t) s = 100;
+  else if (n.includes(t) || t.includes(n)) s = 80;
+  else {
+    const words = t.split(" ").filter((w) => w.length > 1);
+    if (words.length > 1) {
+      const hit = words.filter((w) => n.includes(w)).length;
+      if (hit === words.length) s = 60;
+      else if (hit >= words.length - 1 && hit > 1) s = 45;
+    }
+  }
+  if (!s) return 0;
+  // year proximity via the `added` timestamp helps pick the right edition
+  const addedNum = Number(v.added);
+  if (addedNum > 0) {
+    const y = new Date(addedNum * 1000).getFullYear();
+    if (y === year) s += 12;
+    else if (Math.abs(y - year) <= 2) s += 6;
+  }
+  return s;
 }
 
 /**
  * Watch section for a curated title:
- * asks the server to resolve the real provider stream and hands it to the
- * built-in PrimePlayer. No demo streams, no third-party players.
+ * matches the title against the provider library straight from the browser and
+ * hands the real stream to the built-in IQRAPRIME Player. No demo streams, no third-party players.
  */
 export default function WatchSection({ title, year, poster }: { title: string; year: number; poster: string }) {
   const [state, setState] = useState<"resolving" | "ready" | "unlinked">("resolving");
@@ -30,37 +65,32 @@ export default function WatchSection({ title, year, poster }: { title: string; y
     if (attempted.current) return;
     attempted.current = true;
     (async () => {
+      const line = readLine();
+      if (!line) {
+        setState("unlinked");
+        return;
+      }
       try {
-        const headers: Record<string, string> = {};
-        const line = readLine();
-        if (line) headers["x-iptv-line"] = encodeLine(line);
-        // 1) server-configured provider line
-        const r = await fetch(
-          `/api/provider/resolve?title=${encodeURIComponent(title)}&year=${year}`,
-          { cache: "no-store" }
-        );
-        let data = (await r.json()) as ResolveResponse;
-        // 2) user's own line (device-stored) if server line isn't configured
-        if ((!data.playable || !data.url) && line) {
-          const r2 = await fetch(
-            `/api/xtream/resolve?kind=match&title=${encodeURIComponent(title)}&year=${year}`,
-            { headers, cache: "no-store" }
-          );
-          const d2 = (await r2.json()) as { found?: boolean; url?: string; name?: string; error?: string };
-          if (d2?.found && d2.url) {
-            data = { playable: true, configured: true, url: d2.url, name: d2.name, kind: "vod" };
-          } else if (d2?.error !== "no_line") {
-            data = { playable: false, configured: true };
-          }
-        }
-        if (data.playable && data.url) {
-          setRes(data);
+        const streams = await getVodStreams(line);
+        const scored = streams
+          .map((v) => ({ v, s: scoreStream(v, title, year) }))
+          .filter((x) => x.s >= 60)
+          .sort((a, b) => b.s - a.s);
+        const best = scored[0];
+        if (best) {
+          const ext = best.v.container_extension || "mp4";
+          setRes({
+            playable: true,
+            url: best.v.direct_source || movieStreamUrl(line, best.v.stream_id, ext),
+            name: best.v.name,
+          });
           setState("ready");
         } else {
-          setRes(data);
+          setRes({ playable: false });
           setState("unlinked");
         }
-      } catch {
+      } catch (e) {
+        setRes({ playable: false, message: (e as Error).message });
         setState("unlinked");
       }
     })();
@@ -72,7 +102,7 @@ export default function WatchSection({ title, year, poster }: { title: string; y
         src={res.url}
         title={res.name || title}
         poster={poster}
-        badge={res.kind === "series" ? "SERIES STREAM" : "PROVIDER STREAM"}
+        badge="PROVIDER STREAM"
       />
     );
   }
@@ -96,12 +126,12 @@ export default function WatchSection({ title, year, poster }: { title: string; y
         <div className="relative">
           <p className="font-display text-lg font-bold text-white">{title}</p>
           <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-mist">
-            {res?.configured === false
-              ? "Connect your IPTV line once — then this title and the entire provider library play right here in the IQRAPRIME Player."
+            {res?.message
+              ? `Provider unreachable right now — ${res.message}`
               : "No stream for this title in the connected provider library. Browse the IPTV Library for everything your line offers."}
           </p>
           <button onClick={() => setLineDialog(true)} className="btn-gold mt-4 rounded-lg px-5 py-2 text-xs font-bold">
-            {res?.configured === false ? "Connect IPTV Line" : "Manage Line"}
+            Manage IPTV Line
           </button>
         </div>
       </div>
