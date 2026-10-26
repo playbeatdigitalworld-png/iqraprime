@@ -7,6 +7,15 @@ import MyListButton from "./MyListButton";
 
 export default function Hero({ items }: { items: Title[] }) {
   const [idx, setIdx] = useState(0);
+  // track which hero images are portrait (posters) so we can render the ambient-blur layout
+  const [portrait, setPortrait] = useState<Record<string, boolean>>({});
+
+  // detect orientation — must handle images that completed BEFORE React attached onLoad (cache)
+  const probe = (el: HTMLImageElement | null, id: string) => {
+    if (!el || !el.complete || !el.naturalWidth) return;
+    const np = el.naturalHeight > el.naturalWidth * 1.05;
+    setPortrait((prev) => (prev[id] === np ? prev : { ...prev, [id]: np }));
+  };
 
   useEffect(() => {
     if (items.length < 2) return;
@@ -16,36 +25,65 @@ export default function Hero({ items }: { items: Title[] }) {
 
   if (!items.length) return null;
   const hero = items[idx];
+  const isPortrait = portrait[hero.id];
 
   return (
     <section
       className="relative -mt-16 h-[78vh] min-h-[520px] max-h-[760px] overflow-hidden"
       aria-label="Featured"
     >
-      {items.map((it, i) => (
-        <div
-          key={it.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ${i === idx ? "opacity-100" : "opacity-0"}`}
-          aria-hidden={i !== idx}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={it.backdrop}
-            alt=""
-            className="h-full w-full object-cover"
-            loading={i === 0 ? "eager" : "lazy"}
-          />
-        </div>
-      ))}
+      {items.map((it, i) => {
+        const p = portrait[it.id];
+        return (
+          <div
+            key={it.id}
+            className={`absolute inset-0 transition-opacity duration-1000 ${i === idx ? "opacity-100" : "opacity-0"}`}
+            aria-hidden={i !== idx}
+          >
+            {/* ambient layer — always blurred so text stays readable */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={it.backdrop}
+              alt=""
+              className={`absolute inset-0 h-full w-full object-cover scale-125 blur-2xl ${p ? "opacity-60" : "opacity-0"}`}
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+            {/* main layer — sharp cover for landscape stills */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={it.backdrop}
+              alt=""
+              ref={(el) => probe(el, it.id)}
+              onLoad={(e) => probe(e.currentTarget, it.id)}
+              className={`absolute inset-0 h-full w-full transition-all duration-700 ${
+                p === undefined ? "opacity-0" : p ? "opacity-0" : "object-cover opacity-100"
+              }`}
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+          </div>
+        );
+      })}
 
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/20" />
       <div className="absolute inset-0 bg-gradient-to-r from-ink/95 via-ink/40 to-transparent" />
+
+      {/* sharp poster card on the right when the source art is portrait */}
+      {isPortrait && (
+        <div className="absolute right-6 lg:right-16 bottom-16 sm:bottom-20 hidden sm:block pointer-events-none">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={hero.backdrop}
+            alt=""
+            className="h-[46vh] max-h-[420px] w-auto rounded-xl border border-gold/25 shadow-[0_24px_60px_rgba(0,0,0,0.65)]"
+          />
+        </div>
+      )}
 
       <div className="relative h-full mx-auto max-w-7xl px-4 sm:px-6 flex flex-col justify-end pb-16 sm:pb-20">
         <div className="max-w-2xl fade-up" key={hero.id}>
           <div className="flex items-center gap-3 text-xs font-semibold tracking-widest">
             <span className="rounded-md bg-gold px-2 py-1 text-ink">#{idx + 1} FEATURED</span>
-            <span className="text-gold">{hero.kind === "drama" ? "PAKISTANI DRAMA" : "MOVIE"}</span>
+            <span className="text-gold">{hero.kind === "drama" ? "PAKISTANI DRAMA" : hero.kind === "series" ? "WEB SERIES" : "MOVIE"}</span>
           </div>
 
           <h1 className="mt-4 font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-white gold-glow-text">
