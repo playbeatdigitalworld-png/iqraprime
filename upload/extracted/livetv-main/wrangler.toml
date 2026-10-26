@@ -1,0 +1,36 @@
+name = "playbeat-live"
+main = "src/worker/playbeat-proxy.ts"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[triggers]
+crons = ["0 */6 * * *"]
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[vars]
+DOMAIN = "playbeat.live"
+ALLOWED_ORIGIN = "*"
+CLOUDFLARE_DOH_URL = "https://cloudflare-dns.com/dns-query"
+ENVIRONMENT = "production"
+PLAYBACK_BASE_URL = "https://playbeat-broadcast.playbeatdigital.workers.dev"
+GEOTV_ALLOWED_ORIGIN = "http://advance.playbeat.live"
+ALLOW_INSECURE_GEOTV = "true"
+
+[[d1_databases]]
+binding = "CATALOG_DB"
+database_name = "playbeat-catalog"
+database_id = "75e2c1c3-a1cc-4b6d-b8f4-4afb403f3e2b"
+migrations_dir = "migrations"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "playbeat-catalog"
+database_id = "75e2c1c3-a1cc-4b6d-b8f4-4afb403f3e2b"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "star-panel-assets"

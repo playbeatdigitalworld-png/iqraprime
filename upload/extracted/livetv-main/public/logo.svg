@@ -1,0 +1,39 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="112" fill="#050811"/>
+  <defs>
+    <linearGradient id="chromeBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#cbd5e1"/>
+      <stop offset="50%" stop-color="#64748b"/>
+      <stop offset="75%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <linearGradient id="blueCore" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="40%" stop-color="#0369a1"/>
+      <stop offset="80%" stop-color="#075985"/>
+      <stop offset="100%" stop-color="#0c4a6e"/>
+    </linearGradient>
+    <linearGradient id="cyanPulse" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="30%" stop-color="#00f2fe"/>
+      <stop offset="70%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g transform="translate(40, 20) scale(2.7)">
+    <path d="M 38 22 C 31 17 22 22 22 31 L 22 129 C 22 138 31 143 38 138 L 134 89 C 142 85 142 75 134 71 Z" fill="#031024" opacity="0.8"/>
+    <path d="M 36 20 C 27 15 16 21 16 32 L 16 128 C 16 139 27 145 36 140 L 136 92 C 146 87 146 73 136 68 Z" stroke="url(#chromeBorder)" stroke-width="10" stroke-linejoin="round" stroke-linecap="round" fill="url(#blueCore)"/>
+    <path d="M 40 38 C 36 35 32 37 32 42 L 32 118 C 32 123 36 125 40 122 L 118 84 C 122 82 122 78 118 76 Z" fill="#06182c" opacity="0.6"/>
+    <path d="M 16 80 L 46 80 L 54 80 L 62 62 L 72 102 L 82 48 L 92 108 L 102 74 L 110 80 L 138 80" stroke="url(#cyanPulse)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" filter="url(#neonGlow)"/>
+    <path d="M 16 80 L 46 80 L 54 80 L 62 62 L 72 102 L 82 48 L 92 108 L 102 74 L 110 80 L 138 80" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  </g>
+</svg>

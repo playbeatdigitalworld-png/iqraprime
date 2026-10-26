@@ -1,0 +1,59 @@
+# StreamPlay auto-deploy pipeline
+#
+# Flow: git push (source change) -> this Action rebuilds api/index.js
+#       -> if the bundle changed, it is committed with the repo owner's
+#          identity (required: Vercel Hobby plan blocks production deploys
+#          whose commit author is not a team member)
+#       -> the bundle commit lands on main -> Vercel git integration builds
+#          (npm run build) and auto-promotes to production.
+#
+# If the bundle is unchanged (frontend-only push), nothing is committed and
+# Vercel deploys the push directly.
+
+name: Auto-deploy (rebuild serverless bundle)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-deploy
+  cancel-in-progress: false
+
+jobs:
+  rebuild-bundle:
+    # Skip runs triggered by this workflow's own bundle commits — the bundle
+    # was just rebuilt from the latest sources, rebuilding again is a no-op.
+    if: "${{ !startsWith(github.event.head_commit.message, 'chore: rebuild serverless bundle') }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun (repo uses committed bun.lock)
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Rebuild serverless bundle
+        run: bun run build:serverless
+
+      - name: Commit bundle if changed (triggers Vercel deploy)
+        run: |
+          git config user.name "mahbubauzair-dotcom"
+          git config user.email "289768919+mahbubauzair-dotcom@users.noreply.github.com"
+          if git diff --quiet -- api/index.js; then
+            echo "Bundle unchanged (frontend-only push) — Vercel deploys this push directly."
+          else
+            git add api/index.js
+            git commit -m "chore: rebuild serverless bundle from ${GITHUB_SHA::7}"
+            git push
+            echo "Bundle commit pushed — Vercel will build & promote to production."
+          fi

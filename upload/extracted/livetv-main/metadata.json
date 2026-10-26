@@ -1,0 +1,6 @@
+{
+  "name": "PlayBeat Live TV",
+  "description": "Live-TV catalog frontend with in-site HLS playback. A secure authorized provider is required for live feeds.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

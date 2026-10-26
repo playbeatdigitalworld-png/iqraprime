@@ -1,0 +1,11 @@
+{
+  "measuredAt": "2026-10-07T22:53:12.418Z",
+  "totalSeries": 17168,
+  "sampled": 812,
+  "failed": 88,
+  "avgEpisodesPerSeries": 29.85,
+  "sd": 53.96,
+  "estimate": 512461,
+  "ci95": 63718,
+  "zeroCount": 8
+}

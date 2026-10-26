@@ -1,0 +1,163 @@
+{
+  "measuredAt": "2026-10-08T03:49:13.205Z",
+  "elapsedMs": 8428,
+  "live": {
+    "totalRows": 14195,
+    "familySafeNameOnly": 14129,
+    "adultNamedCategories": 3,
+    "safeCategories": 259,
+    "scopedIndexCount": 13671,
+    "droppedAdultItem": 66,
+    "droppedOrphanCategoryItem": 458,
+    "itemsInAdultCategories": 458,
+    "topCategories": [
+      {
+        "categoryId": "1035",
+        "name": "Sports - ESPN+ - Events",
+        "items": 366
+      },
+      {
+        "categoryId": "278",
+        "name": "EN - 24x7 Channels - Exclusive",
+        "items": 311
+      },
+      {
+        "categoryId": "890",
+        "name": "EN - 24x7 Movies - Exclusive",
+        "items": 302
+      },
+      {
+        "categoryId": "95",
+        "name": "AL - Albania & Kosova - Live",
+        "items": 282
+      },
+      {
+        "categoryId": "50",
+        "name": "CA - Canada TV - Live",
+        "items": 257
+      },
+      {
+        "categoryId": "132",
+        "name": "PL - Polish & Poland - Live",
+        "items": 249
+      },
+      {
+        "categoryId": "61",
+        "name": "RU - Russian - Live",
+        "items": 233
+      },
+      {
+        "categoryId": "554",
+        "name": "PT - Portugal TV - Live",
+        "items": 222
+      }
+    ],
+    "deployedCount": 14119
+  },
+  "vod": {
+    "totalRows": 219999,
+    "familySafeNameOnly": 219323,
+    "adultNamedCategories": 25,
+    "safeCategories": 231,
+    "scopedIndexCount": 210248,
+    "droppedAdultItem": 676,
+    "droppedOrphanCategoryItem": 9075,
+    "itemsInAdultCategories": 9075,
+    "topCategories": [
+      {
+        "categoryId": "782",
+        "name": "EN - 2023-2025",
+        "items": 7233
+      },
+      {
+        "categoryId": "398",
+        "name": "EN - Thriller & Horror",
+        "items": 6323
+      },
+      {
+        "categoryId": "722",
+        "name": "DE - Thriller & Horror",
+        "items": 5053
+      },
+      {
+        "categoryId": "504",
+        "name": "EN - 2020-2022",
+        "items": 4085
+      },
+      {
+        "categoryId": "160",
+        "name": "EN - Documentary",
+        "items": 3853
+      },
+      {
+        "categoryId": "678",
+        "name": "DE - 2020-2022",
+        "items": 3761
+      },
+      {
+        "categoryId": "547",
+        "name": "FR - Drame & Romance",
+        "items": 3733
+      },
+      {
+        "categoryId": "863",
+        "name": "DE - 2023-2025",
+        "items": 3479
+      }
+    ],
+    "deployedCount": 86291
+  },
+  "series": {
+    "totalRows": 17168,
+    "familySafeNameOnly": 17162,
+    "adultNamedCategories": 0,
+    "safeCategories": 101,
+    "scopedIndexCount": 17162,
+    "droppedAdultItem": 6,
+    "droppedOrphanCategoryItem": 0,
+    "itemsInAdultCategories": 0,
+    "topCategories": [
+      {
+        "categoryId": "303",
+        "name": "EN - English Series",
+        "items": 1601
+      },
+      {
+        "categoryId": "330",
+        "name": "FR - French Series",
+        "items": 1054
+      },
+      {
+        "categoryId": "794",
+        "name": "EN - English Series 2022-2023",
+        "items": 1045
+      },
+      {
+        "categoryId": "313",
+        "name": "IT - Italian Series",
+        "items": 862
+      },
+      {
+        "categoryId": "410",
+        "name": "EN - Netflix Series",
+        "items": 763
+      },
+      {
+        "categoryId": "134",
+        "name": "AR - Arabic Series",
+        "items": 647
+      },
+      {
+        "categoryId": "750",
+        "name": "NL - Netflix Series",
+        "items": 494
+      },
+      {
+        "categoryId": "306",
+        "name": "IN - Indian Series",
+        "items": 472
+      }
+    ],
+    "deployedCount": 13633
+  }
+}

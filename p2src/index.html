@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <!-- Synchronous Iframe Environment & WebSocket Shield (Must run before any modules or Vite scripts) -->
+    <script>
+      (function() {
+        try {
+          if (typeof window !== 'undefined' && window.WebSocket) {
+            var NativeWebSocket = window.WebSocket;
+            function MockWebSocket(url, protocols) {
+              var isHmr = false;
+              if (typeof url === 'string' && (url.indexOf('vite-hmr') !== -1 || url.indexOf('/@vite') !== -1 || url.indexOf('ws:') !== -1 || url.indexOf('wss:') !== -1)) {
+                isHmr = true;
+              }
+              if (protocols === 'vite-hmr' || (Array.isArray(protocols) && protocols.indexOf('vite-hmr') !== -1)) {
+                isHmr = true;
+              }
+
+              if (isHmr) {
+                var listeners = {};
+                var mock = {
+                  binaryType: 'blob',
+                  bufferedAmount: 0,
+                  extensions: '',
+                  protocol: 'vite-hmr',
+                  readyState: 1, // WebSocket.OPEN
+                  url: String(url),
+                  CONNECTING: 0,
+                  OPEN: 1,
+                  CLOSING: 2,
+                  CLOSED: 3,
+                  onopen: null,
+                  onclose: null,
+                  onerror: null,
+                  onmessage: null,
+                  send: function() {},
+                  close: function(code, reason) {
+                    mock.readyState = 3;
+                    var ev = { type: 'close', wasClean: true, code: code || 1000, reason: reason || '' };
+                    if (typeof mock.onclose === 'function') {
+                      try { mock.onclose(ev); } catch (e) {}
+                    }
+                    (listeners['close'] || []).forEach(function(fn) {
+                      try { fn(ev); } catch (e) {}
+                    });
+                  },
+                  addEventListener: function(type, fn) {
+                    if (!listeners[type]) listeners[type] = [];
+                    listeners[type].push(fn);
+                    if (type === 'open') {
+                      setTimeout(function() {
+                        var ev = { type: 'open' };
+                        if (typeof mock.onopen === 'function') {
+                          try { mock.onopen(ev); } catch (e) {}
+                        }
+                        try { fn(ev); } catch (e) {}
+                      }, 10);
+                    }
+                  },
+                  removeEventListener: function(type, fn) {
+                    if (!listeners[type]) return;
+                    listeners[type] = listeners[type].filter(function(cb) { return cb !== fn; });
+                  },
+                  dispatchEvent: function() {
+                    return true;
+                  }
+                };
+
+                setTimeout(function() {
+                  if (mock.readyState === 1) {
+                    var ev = { type: 'open' };
+                    if (typeof mock.onopen === 'function') {
+                      try { mock.onopen(ev); } catch (e) {}
+                    }
+                    (listeners['open'] || []).forEach(function(fn) {
+                      try { fn(ev); } catch (e) {}
+                    });
+                  }
+                }, 10);
+
+                return mock;
+              }
+
+              return new NativeWebSocket(url, protocols);
+            }
+
+            MockWebSocket.CONNECTING = 0;
+            MockWebSocket.OPEN = 1;
+            MockWebSocket.CLOSING = 2;
+            MockWebSocket.CLOSED = 3;
+            MockWebSocket.prototype = NativeWebSocket.prototype;
+            window.WebSocket = MockWebSocket;
+          }
+        } catch (e) {}
+
+        // Ensure window.fetch setter is configurable in sandboxed iframes
+        try {
+          var _origFetch = window.fetch;
+          Object.defineProperty(window, 'fetch', {
+            get: function() { return _origFetch; },
+            set: function(fn) { _origFetch = fn; },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (err) {}
+
+        // Suppress transient HMR WebSocket / frame error reports
+        try {
+          var _origConsoleError = console.error;
+          console.error = function() {
+            var msg = '';
+            for (var i = 0; i < arguments.length; i++) {
+              var arg = arguments[i];
+              if (arg instanceof Error) {
+                msg += (arg.message || '') + ' ' + (arg.stack || '') + ' ';
+              } else {
+                msg += (arg && arg.message ? arg.message : String(arg)) + ' ';
+              }
+            }
+            if (
+              msg.indexOf('WebSocket') !== -1 ||
+              msg.indexOf('ws://') !== -1 ||
+              msg.indexOf('wss://') !== -1 ||
+              msg.indexOf('vite-hmr') !== -1 ||
+              msg.indexOf('Cannot set property fetch') !== -1
+            ) {
+              return;
+            }
+            _origConsoleError.apply(console, arguments);
+          };
+
+          window.addEventListener('error', function(e) {
+            var msg = (e && e.message) ? String(e.message) : '';
+            var file = (e && e.filename) ? String(e.filename) : '';
+            if (
+              msg.indexOf('WebSocket') !== -1 ||
+              msg.indexOf('fetch') !== -1 ||
+              msg.indexOf('vite') !== -1 ||
+              file.indexOf('frame_ant') !== -1 ||
+              file.indexOf('@vite/client') !== -1
+            ) {
+              e.stopImmediatePropagation();
+              e.preventDefault();
+              return true;
+            }
+          }, true);
+
+          window.addEventListener('unhandledrejection', function(e) {
+            var reasonStr = e && e.reason ? (e.reason.message || String(e.reason)) : '';
+            if (
+              reasonStr.indexOf('WebSocket') !== -1 ||
+              reasonStr.indexOf('fetch') !== -1 ||
+              reasonStr.indexOf('vite') !== -1
+            ) {
+              e.stopImmediatePropagation();
+              e.preventDefault();
+            }
+          }, true);
+        } catch (err) {}
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>StreamPlay — Premium Cinema & Live OTT</title>
+    <meta name="description" content="StreamPlay is a premium international OTT experience — verified public-domain cinema, licensed free-to-air live TV, and full EPG, in a private closed-beta pilot for approved members." />
+    <link rel="canonical" href="https://stream.playbeatdigital.store/" />
+
+    <!-- OpenGraph / Social Cards -->
+    <meta property="og:title" content="StreamPlay — Premium Cinema & Live OTT" />
+    <meta property="og:description" content="Premium international OTT — verified cinema, live TV & EPG. Private closed-beta for approved members." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://stream.playbeatdigital.store/" />
+    <meta property="og:site_name" content="StreamPlay" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="StreamPlay — Premium Cinema & Live OTT" />
+    <meta name="twitter:description" content="Premium international OTT — verified cinema, live TV & EPG. Private closed-beta for approved members." />
+    
+    <!-- PWA & Mobile Web App Meta -->
+    <meta name="theme-color" content="#04070B" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="StreamPlay" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- StreamPlay typography: Sora (display) + Plus Jakarta Sans (text) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Structured Data (JSON-LD) for Streaming Service & Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BroadcastService",
+      "name": "StreamPlay",
+      "broadcastDisplayName": "StreamPlay Premium OTT",
+      "description": "Premium international OTT platform offering verified legal cinema, licensed public broadcasts, and full live TV EPG integration.",
+      "isAccessibleForFree": true,
+      "inLanguage": "en"
+    }
+    </script>
+  </head>
+  <body class="bg-[#04070B] text-[#F7F7F8] antialiased selection:bg-[#E5093A]/30 selection:text-white overflow-x-hidden min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

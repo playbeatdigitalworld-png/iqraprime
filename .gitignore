@@ -1,18 +1,19 @@
-# dependencies
 node_modules/
-
-# next
-.next/
-out/
-next-env.d.ts
-*.tsbuildinfo
-
-# env & secrets
-.env
-.env.local
-.env*.local
-
-# misc
+build/
+dist/
+coverage/
 .DS_Store
 *.log
-.vercel
+.env
+.env.*
+!.env.example
+
+# Vercel deploy artifacts
+.vercel/
+
+# Agent/ops artifacts with potential secrets — never commit
+tool-results/
+scripts/task11_set_persistence_env.sh
+
+# PakFlix — separate sibling webapp (not part of StreamFamily repo)
+/pakflix/

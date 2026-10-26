@@ -1,0 +1,3 @@
+# Private Pilot Mode - Do not index private beta platform
+User-agent: *
+Disallow: /

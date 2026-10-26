@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { background: #070B12; display: flex; gap: 40px; align-items: center; justify-content: center; padding: 40px; flex-wrap: wrap; }
+  .cell { text-align: center; }
+  .label { color: #8A93A2; font: 11px sans-serif; margin-top: 8px; letter-spacing: .2em; }
+  .row { display:flex; gap:16px; align-items:flex-end; }
+</style>
+</head>
+<body>
+  <!-- V2: folded ribbon S, angled terminals, tight interlock -->
+  <div class="cell">
+    <div class="row">
+      <svg width="220" height="220" viewBox="0 0 512 512">
+        <defs>
+          <linearGradient id="t" x1="0.3" y1="0" x2="0.7" y2="1">
+            <stop offset="0" stop-color="#FF4D6F"/>
+            <stop offset="1" stop-color="#E5093A"/>
+          </linearGradient>
+          <linearGradient id="b" x1="0.7" y1="1" x2="0.3" y2="0">
+            <stop offset="0" stop-color="#B90732"/>
+            <stop offset="1" stop-color="#E5093A"/>
+          </linearGradient>
+        </defs>
+        <g stroke-linejoin="round" stroke-width="14">
+          <!-- top ribbon -->
+          <path d="M118,96 L154,64 L408,64 L408,148 L270,148 L270,258 L128,206 Z" fill="url(#t)" stroke="url(#t)"/>
+          <!-- top fold face -->
+          <path d="M408,148 L270,148 L408,262 Z" fill="#A10732"/>
+          <!-- bottom ribbon (180 rotation) -->
+          <path d="M394,416 L358,448 L104,448 L104,364 L242,364 L242,254 L384,306 Z" fill="url(#b)" stroke="url(#b)"/>
+          <path d="M104,364 L242,364 L104,250 Z" fill="#A10732"/>
+        </g>
+      </svg>
+      <svg width="110" height="110" viewBox="0 0 512 512">
+        <use href="#noop"/>
+        <g stroke-linejoin="round" stroke-width="14">
+          <path d="M118,96 L154,64 L408,64 L408,148 L270,148 L270,258 L128,206 Z" fill="url(#t)" stroke="url(#t)"/>
+          <path d="M408,148 L270,148 L408,262 Z" fill="#A10732"/>
+          <path d="M394,416 L358,448 L104,448 L104,364 L242,364 L242,254 L384,306 Z" fill="url(#b)" stroke="url(#b)"/>
+          <path d="M104,364 L242,364 L104,250 Z" fill="#A10732"/>
+        </g>
+      </svg>
+      <svg width="44" height="44" viewBox="0 0 512 512">
+        <g stroke-linejoin="round" stroke-width="14">
+          <path d="M118,96 L154,64 L408,64 L408,148 L270,148 L270,258 L128,206 Z" fill="url(#t)" stroke="url(#t)"/>
+          <path d="M408,148 L270,148 L408,262 Z" fill="#A10732"/>
+          <path d="M394,416 L358,448 L104,448 L104,364 L242,364 L242,254 L384,306 Z" fill="url(#b)" stroke="url(#b)"/>
+          <path d="M104,364 L242,364 L104,250 Z" fill="#A10732"/>
+        </g>
+      </svg>
+    </div>
+    <div class="label">V2 · 220 / 110 / 44 PX</div>
+  </div>
+
+  <!-- V3: deeper interlock, tips tuck past center -->
+  <div class="cell">
+    <div class="row">
+      <svg width="220" height="220" viewBox="0 0 512 512">
+        <g stroke-linejoin="round" stroke-width="12">
+          <path d="M112,104 L156,64 L416,64 L416,152 L282,152 L282,296 L150,236 Z" fill="url(#t)" stroke="url(#t)"/>
+          <path d="M416,152 L282,152 L416,290 Z" fill="#A10732"/>
+          <path d="M400,408 L356,448 L96,448 L96,360 L230,360 L230,216 L362,276 Z" fill="url(#b)" stroke="url(#b)"/>
+          <path d="M96,360 L230,360 L96,222 Z" fill="#A10732"/>
+        </g>
+      </svg>
+      <svg width="110" height="110" viewBox="0 0 512 512">
+        <g stroke-linejoin="round" stroke-width="12">
+          <path d="M112,104 L156,64 L416,64 L416,152 L282,152 L282,296 L150,236 Z" fill="url(#t)" stroke="url(#t)"/>
+          <path d="M416,152 L282,152 L416,290 Z" fill="#A10732"/>
+          <path d="M400,408 L356,448 L96,448 L96,360 L230,360 L230,216 L362,276 Z" fill="url(#b)" stroke="url(#b)"/>
+          <path d="M96,360 L230,360 L96,222 Z" fill="#A10732"/>
+        </g>
+      </svg>
+      <svg width="44" height="44" viewBox="0 0 512 512">
+        <g stroke-linejoin="round" stroke-width="12">
+          <path d="M112,104 L156,64 L416,64 L416,152 L282,152 L282,296 L150,236 Z" fill="url(#t)" stroke="url(#t)"/>
+          <path d="M416,152 L282,152 L416,290 Z" fill="#A10732"/>
+          <path d="M400,408 L356,448 L96,448 L96,360 L230,360 L230,216 L362,276 Z" fill="url(#b)" stroke="url(#b)"/>
+          <path d="M96,360 L230,360 L96,222 Z" fill="#A10732"/>
+        </g>
+      </svg>
+    </div>
+    <div class="label">V3 · 220 / 110 / 44 PX</div>
+  </div>
+</body>
+</html>

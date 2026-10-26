@@ -1,0 +1,20 @@
+{
+  "measuredAt": "2026-10-07T22:05:30.886Z",
+  "host": "http://advance.playbeat.live:8880",
+  "live": {
+    "total": 14177,
+    "familySafe": 14111,
+    "categories": 262
+  },
+  "vod": {
+    "total": 219999,
+    "familySafe": 219323,
+    "categories": 256
+  },
+  "series": {
+    "total": 17168,
+    "familySafe": 17162,
+    "categories": 101
+  },
+  "elapsedMs": 14480
+}

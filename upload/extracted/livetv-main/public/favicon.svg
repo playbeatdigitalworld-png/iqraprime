@@ -1,0 +1,23 @@
+<svg width="64" height="64" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="chromeBorderFav" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#94a3b8"/>
+      <stop offset="70%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <linearGradient id="blueCoreFav" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0369a1"/>
+      <stop offset="100%" stop-color="#0c4a6e"/>
+    </linearGradient>
+    <linearGradient id="cyanPulseFav" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#00f2fe"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <path d="M 36 20 C 27 15 16 21 16 32 L 16 128 C 16 139 27 145 36 140 L 136 92 C 146 87 146 73 136 68 Z" stroke="url(#chromeBorderFav)" stroke-width="12" stroke-linejoin="round" stroke-linecap="round" fill="url(#blueCoreFav)"/>
+  <path d="M 16 80 L 46 80 L 54 80 L 62 62 L 72 102 L 82 48 L 92 108 L 102 74 L 110 80 L 138 80" stroke="url(#cyanPulseFav)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 16 80 L 46 80 L 54 80 L 62 62 L 72 102 L 82 48 L 92 108 L 102 74 L 110 80 L 138 80" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

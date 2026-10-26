@@ -1,0 +1,6 @@
+{
+  "name": "IPTV Studio Pro - Playlist & Channel Manager",
+  "description": "Premium IPTV playlist & channel categories manager with M3U/M3U8 parser, duplicate detection, batch channel organization, and dark cinematic interface.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

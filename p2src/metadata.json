@@ -1,0 +1,6 @@
+{
+  "name": "Aether Stream — Private Member Portal",
+  "description": "Private closed-beta streaming portal and Star IPTV pilot platform for approved household members.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

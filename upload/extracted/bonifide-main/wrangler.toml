@@ -1,0 +1,24 @@
+name = "new-ne222"
+main = "src/worker/index.ts"
+compatibility_date = "2026-10-07"
+workers_dev = true
+
+[build]
+command = "npm run build"
+
+[assets]
+directory = "./dist/client"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "CATALOG_DB"
+database_name = "new-ne222-provider"
+database_id = "ca587ec1-56b2-49f9-92cc-3cd167f284e4"
+
+[[routes]]
+pattern = "playbeattv.buzz"
+custom_domain = true
+
+[triggers]
+crons = ["*/15 * * * *"]

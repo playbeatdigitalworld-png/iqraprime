@@ -1,0 +1,43 @@
+{
+  "syncedAt": "2026-10-08T03:52:11.467Z",
+  "elapsedMs": 11145,
+  "live": {
+    "providerRows": 14195,
+    "uploaded": 13661,
+    "dupes": 0,
+    "chunks": 1,
+    "removed": 0,
+    "probe": {
+      "maxId": "live-1077839",
+      "maxName": "AF: Zap Viva Internacional",
+      "sampleId": "live-707997",
+      "sampleName": "Premier Sports 1"
+    }
+  },
+  "vod": {
+    "providerRows": 219999,
+    "uploaded": 142891,
+    "dupes": 67357,
+    "chunks": 6,
+    "removed": 0,
+    "probe": {
+      "maxId": "vod-1077818",
+      "maxName": "The Dog Bite Murders (2025)",
+      "sampleId": "vod-741584",
+      "sampleName": "ES: Penance Lane (2020)"
+    }
+  },
+  "series": {
+    "providerRows": 17168,
+    "uploaded": 14108,
+    "dupes": 3060,
+    "chunks": 1,
+    "removed": 0,
+    "probe": {
+      "maxId": "ser-24849",
+      "maxName": "IN: Andhvishwas (2026)",
+      "sampleId": "ser-16229",
+      "sampleName": "NL: Hurts Like Hell (2022)"
+    }
+  }
+}

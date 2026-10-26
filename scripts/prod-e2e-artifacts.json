@@ -1,0 +1,40 @@
+{
+  "base": "https://stream.playbeatdigital.store",
+  "creator": {
+    "id": "dd3d6988-2026-44a3-bbb5-c8e14ed8db74",
+    "handle": "qa_muzo5ydy",
+    "email": "qa-muzo5ydy@creator-hub.streamplay.test"
+  },
+  "video_id": "7ac74887-96c0-4c1c-9b42-f99c513679f5",
+  "video_ids": [
+    "7ac74887-96c0-4c1c-9b42-f99c513679f5"
+  ],
+  "withdrawal_id": "8d69f094-61f2-4ecc-8cac-d6f41764a91e",
+  "report_id": null,
+  "session_ids": [
+    "8c39cb39-658e-4377-9783-843a2cf95f5b",
+    "556ab97d-c704-45bd-bc8c-12e7963eb1f3",
+    "7a05a164-0795-41f5-b6d7-0b7904e9ca16"
+  ],
+  "original_settings": {
+    "id": 1,
+    "min_eligible_views": 10000,
+    "payout_per_10000_valid_views_usd": 5,
+    "minimum_withdrawal_usd": 15,
+    "free_access_percentage": 50,
+    "paid_access_percentage": 50,
+    "free_access_duration_days": 2,
+    "moderation_enabled": true,
+    "auto_publish_shorts": false,
+    "min_watch_seconds": 30,
+    "dedupe_window_minutes": 30,
+    "max_sessions_per_hour_per_ip": 12,
+    "max_watch_heartbeat_seconds": 20,
+    "suspicion_threshold": 60,
+    "updated_at": "1970-01-01T00:00:00.000Z"
+  },
+  "started_at": "2026-10-08T15:06:21.407Z",
+  "finished_at": "2026-10-08T15:09:02.362Z",
+  "passed": 36,
+  "total": 36
+}
