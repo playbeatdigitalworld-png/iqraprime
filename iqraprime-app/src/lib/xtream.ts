@@ -202,11 +202,20 @@ export async function getSeriesInfo(line: IptvLine, seriesId: number) {
 }
 
 export function movieStreamUrl(line: IptvLine, streamId: number, ext = "mp4") {
+  if (isBundledLine(line)) return `/api/media/movie/${streamId}.${ext}`;
   return `${line.host}/movie/${encodeURIComponent(line.user)}/${encodeURIComponent(line.pass)}/${streamId}.${ext}`;
 }
 
 export function episodeStreamUrl(line: IptvLine, episodeId: number, ext = "mp4") {
+  if (isBundledLine(line)) return `/api/media/series/${episodeId}.${ext}`;
   return `${line.host}/series/${encodeURIComponent(line.user)}/${encodeURIComponent(line.pass)}/${episodeId}.${ext}`;
+}
+
+/** The bundled provider line (matches the media proxy route). */
+function isBundledLine(line: IptvLine): boolean {
+  let host = (process.env.P_HOST || "").replace(/^http:\/\//i, "https://").replace(/:8880$/, "").replace(/\/+$/, "");
+  if (!host) host = "https://stream.playbeat.live";
+  return line.host === host && line.user === (process.env.P_USER || "");
 }
 
 // ---- matching helper: map a curated title onto provider content ----

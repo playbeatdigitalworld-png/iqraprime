@@ -79,9 +79,14 @@ export default function WatchSection({ title, year, poster }: { title: string; y
         const best = scored[0];
         if (best) {
           const ext = best.v.container_extension || "mp4";
+          // Prefer the same-origin proxy URL; ignore plain-HTTP direct sources
+          // (mixed content on HTTPS pages).
+          const direct = best.v.direct_source || "";
           setRes({
             playable: true,
-            url: best.v.direct_source || movieStreamUrl(line, best.v.stream_id, ext),
+            url: /^https:\/\//i.test(direct)
+              ? direct
+              : movieStreamUrl(line, best.v.stream_id, ext),
             name: best.v.name,
           });
           setState("ready");

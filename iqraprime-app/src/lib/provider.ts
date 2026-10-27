@@ -132,12 +132,13 @@ const norm = (s: string) =>
 
 function vodUrl(v: ProviderVod): { url: string; container: string } {
   const container = v.container_extension || "mp4";
-  if (v.direct_source) return { url: v.direct_source, container };
-  return { url: `${BASE}/movie/${USER}/${PASS}/${v.num}.${container}`, container };
+  // Same-origin media proxy hides credentials and keeps HTTPS pages free of
+  // mixed content (the panel's media edge nodes are plain HTTP).
+  return { url: `/api/media/movie/${v.num}.${container}`, container };
 }
 
 function seriesUrl(seriesId: number, episodeId: number, container = "mp4"): string {
-  return `${BASE}/series/${USER}/${PASS}/${episodeId}.${container}`;
+  return `/api/media/series/${episodeId}.${container}`;
 }
 
 /** Best-effort VOD match for a curated title (name + year). */

@@ -10,10 +10,17 @@ export interface IptvLine {
 }
 
 export const DEFAULT_LINE: IptvLine = {
-  host: (process.env.NEXT_PUBLIC_IPTV_HOST || "http://stream.playbeat.live:8880").trim(),
+  host: (process.env.NEXT_PUBLIC_IPTV_HOST || "https://stream.playbeat.live").trim(),
   user: (process.env.NEXT_PUBLIC_IPTV_USER || "").trim(),
   pass: (process.env.NEXT_PUBLIC_IPTV_PASS || "").trim(),
 };
+
+/** True when this line is the app's built-in provider (media served via the
+ *  same-origin /api/media proxy — required on HTTPS pages because the panel's
+ *  media edge nodes are plain HTTP). */
+function isBundledLine(line: IptvLine): boolean {
+  return line.host === DEFAULT_LINE.host && line.user === DEFAULT_LINE.user;
+}
 
 export function normalizeLine(l: Partial<IptvLine>): IptvLine | null {
   let host = (l.host || "").trim();
@@ -329,10 +336,12 @@ export async function getSeriesInfo(line: IptvLine, seriesId: number): Promise<S
 
 // ---------- stream URLs (direct media — no CORS needed for <video>) ----------
 export function movieStreamUrl(line: IptvLine, streamId: number, ext = "mp4"): string {
+  if (isBundledLine(line)) return `/api/media/movie/${streamId}.${ext}`;
   return `${line.host}/movie/${encodeURIComponent(line.user)}/${encodeURIComponent(line.pass)}/${streamId}.${ext}`;
 }
 
 export function episodeStreamUrl(line: IptvLine, episodeId: number, ext = "mp4"): string {
+  if (isBundledLine(line)) return `/api/media/series/${episodeId}.${ext}`;
   return `${line.host}/series/${encodeURIComponent(line.user)}/${encodeURIComponent(line.pass)}/${episodeId}.${ext}`;
 }
 
