@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import BrowseGrid from "@/components/BrowseGrid";
+import IptvRails, { type SectionSpec } from "@/components/IptvRails";
 import { DRAMA_TITLES } from "@/lib/catalog";
 
 export const metadata: Metadata = {
@@ -9,6 +11,11 @@ export const metadata: Metadata = {
 };
 
 const dramaGenres = Array.from(new Set(DRAMA_TITLES.flatMap((t) => t.genres))).sort();
+
+const PROVIDER_DRAMAS: SectionSpec[] = [
+  { file: "pk-series", title: "Pakistani Dramas — Full Library", viewAllHref: "/iptv", limit: 20 },
+  { file: "bd-series", title: "Bangladeshi Dramas — Live", viewAllHref: "/iptv", limit: 20 },
+];
 
 export default function DramasPage() {
   return (
@@ -20,10 +27,17 @@ export default function DramasPage() {
         </h1>
         <p className="mt-2 text-sm text-mist max-w-2xl">
           {DRAMA_TITLES.length} serials that defined eras — Hum TV, ARY Digital, Geo TV and PTV
-          classics, from Humsafar to Kabhi Main Kabhi Tum.
+          classics, from Humsafar to Kabhi Main Kabhi Tum — plus the full live drama library from
+          the provider with Pakistani and Bangladeshi serials,{" "}
+          <Link href="/iptv" className="font-semibold text-gold hover:text-gold-soft">
+            open the IPTV Library →
+          </Link>
         </p>
       </header>
-      <BrowseGrid items={DRAMA_TITLES} allGenres={dramaGenres} />
+      <IptvRails sections={PROVIDER_DRAMAS} />
+      <div className="mt-12">
+        <BrowseGrid items={DRAMA_TITLES} allGenres={dramaGenres} />
+      </div>
     </div>
   );
 }

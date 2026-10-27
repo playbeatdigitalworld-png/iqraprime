@@ -1,0 +1,49 @@
+{
+  "generated": "2026-10-27T01:10:05.189Z",
+  "sections": {
+    "in-2026": {
+      "count": 655,
+      "y2026": 613
+    },
+    "en-2026": {
+      "count": 240,
+      "y2026": 240
+    },
+    "pk-movies": {
+      "count": 293,
+      "y2026": 0
+    },
+    "bd-movies": {
+      "count": 979,
+      "y2026": 7
+    },
+    "in-hindi": {
+      "count": 400,
+      "y2026": 3
+    },
+    "in-hindi-dubbed": {
+      "count": 240,
+      "y2026": 6
+    },
+    "in-south": {
+      "count": 480,
+      "y2026": 5
+    },
+    "pk-series": {
+      "count": 390,
+      "y2026": 1
+    },
+    "bd-series": {
+      "count": 45,
+      "y2026": 1
+    },
+    "in-series": {
+      "count": 400,
+      "y2026": 20
+    },
+    "in-web": {
+      "count": 400,
+      "y2026": 23
+    }
+  }
+}

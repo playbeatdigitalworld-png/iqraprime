@@ -133,8 +133,16 @@ export default function PrimePlayer({ src, title, poster, autoPlay = true, onBac
     const onPause = () => setPlaying(false);
     const onWait = () => setLoading(true);
     const onPlaying = () => setLoading(false);
-    const onErr = () =>
-      setError("Playback failed. The source may be unavailable or unsupported.");
+    const onErr = () => {
+      const code = v.error?.code;
+      if (code === 4)
+        setError(
+          "This title's codec isn't supported by this browser (often Dolby audio inside an MKV). Try Chrome, Edge or Safari — or copy the stream link and play it in VLC or your TV app."
+        );
+      else if (code === 2)
+        setError("Network error while streaming. Check your connection and retry.");
+      else setError("Playback failed. The source may be unavailable or unsupported.");
+    };
     const onEnded = () => setPlaying(false);
     v.addEventListener("timeupdate", onTime);
     v.addEventListener("loadedmetadata", onMeta);
@@ -354,6 +362,16 @@ export default function PrimePlayer({ src, title, poster, autoPlay = true, onBac
           <div>
             <p className="text-sm font-bold text-gold">Playback error</p>
             <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-mist">{error}</p>
+            {src && (
+              <button
+                onClick={() => {
+                  void navigator.clipboard?.writeText(src).catch(() => {});
+                }}
+                className="mt-3 rounded-lg border border-gold/40 px-4 py-1.5 text-xs font-semibold text-gold hover:bg-gold/10 transition"
+              >
+                Copy stream link (open in VLC)
+              </button>
+            )}
             <button
               onClick={() => {
                 setError(null);
