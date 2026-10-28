@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { readLine, useIptvLine } from "@/hooks/useIptvLine";
 import { getSeries, getSeriesCategories, getVodCategories, getVodStreams, type Category } from "@/lib/iptv-client";
+import { proxiedImg } from "@/lib/imgproxy";
 import IptvLineDialog from "./IptvLineDialog";
 
 interface Item {
@@ -241,7 +242,7 @@ export default function IptvLibraryClient() {
                 <div className="relative aspect-[2/3] bg-navy-2">
                   {it.poster ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={it.poster} alt={`${it.name} poster`} loading="lazy" className="h-full w-full object-cover" />
+                    <img src={proxiedImg(it.poster, it.name)} alt={`${it.name} poster`} loading="lazy" className="h-full w-full object-cover" />
                   ) : (
                     <div className="grid h-full place-items-center text-4xl text-gold/30">I</div>
                   )}

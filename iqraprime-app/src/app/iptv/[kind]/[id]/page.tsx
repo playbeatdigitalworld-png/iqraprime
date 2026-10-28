@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PrimePlayer from "@/components/PrimePlayer";
 import IptvLineDialog from "@/components/IptvLineDialog";
+import { proxiedImg } from "@/lib/imgproxy";
 import { readLine, useIptvLine } from "@/hooks/useIptvLine";
 import {
   episodeStreamUrl,
@@ -130,7 +131,7 @@ export default function ProviderTitlePage() {
               key={isSeries ? `ep-${currentEp?.id}` : `mv-${id}`}
               src={activeSrc}
               title={displayTitle}
-              poster={poster || undefined}
+              poster={proxiedImg(poster, displayTitle) || undefined}
               badge={isSeries ? "WEB SERIES" : "MOVIE"}
             />
           ) : (
@@ -189,7 +190,7 @@ export default function ProviderTitlePage() {
             <div>
               {poster && (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={poster} alt="" className="w-full rounded-xl border border-gold/20" />
+                <img src={proxiedImg(poster, displayTitle)} alt="" className="w-full rounded-xl border border-gold/20" />
               )}
               <h1 className="mt-3 font-display text-2xl font-bold text-white">
                 {isSeries ? (meta as SeriesInfoResult)?.name : (meta as VodInfoResult)?.name}

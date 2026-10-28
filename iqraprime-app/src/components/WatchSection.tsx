@@ -5,6 +5,7 @@ import PrimePlayer from "./PrimePlayer";
 import IptvLineDialog from "./IptvLineDialog";
 import { readLine } from "@/hooks/useIptvLine";
 import { getVodStreams, movieStreamUrl, type VodStream } from "@/lib/iptv-client";
+import { proxiedImg } from "@/lib/imgproxy";
 
 interface ResolveResponse {
   playable: boolean;
@@ -106,7 +107,7 @@ export default function WatchSection({ title, year, poster }: { title: string; y
       <PrimePlayer
         src={res.url}
         title={res.name || title}
-        poster={poster}
+        poster={proxiedImg(poster, title)}
         badge="PROVIDER STREAM"
       />
     );
@@ -127,7 +128,7 @@ export default function WatchSection({ title, year, poster }: { title: string; y
     <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-gold/25 bg-navy grid place-items-center p-6 text-center">
       <div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-15" />
+        <img src={proxiedImg(poster, title) || poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-15" />
         <div className="relative">
           <p className="font-display text-lg font-bold text-white">{title}</p>
           <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-mist">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { proxiedImg } from "@/lib/imgproxy";
 
 /**
  * IptvRails — renders real provider titles (baked snapshots from the IPTV line)
@@ -56,7 +57,7 @@ function IptvCard({ item, kind }: { item: IptvItem; kind: "movie" | "series" }) 
         {item.p && !broken ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
-            src={item.p}
+            src={proxiedImg(item.p, item.n)}
             alt={`${item.n} poster`}
             loading="lazy"
             onError={() => setBroken(true)}
